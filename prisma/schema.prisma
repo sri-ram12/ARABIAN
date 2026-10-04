@@ -1,0 +1,294 @@
+// Prisma Schema for Arabian Mandi Platform
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  phone         String    @unique
+  password      String
+  role          String    @default("CUSTOMER") // CUSTOMER, ADMIN, KITCHEN_STAFF, DELIVERY_PARTNER
+  profileImage  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  addresses     Address[]
+  orders        Order[]               @relation("CustomerOrders")
+  deliveries    DeliveryAssignment[]  @relation("PartnerDeliveries")
+  locations     DeliveryLocation[]
+  reviews       Review[]
+  supportTickets SupportTicket[]
+  notifications Notification[]
+}
+
+model Address {
+  id                   String   @id @default(uuid())
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  addressLine          String
+  landmark             String?
+  area                 String   // e.g. "Sangivalasa", "Tagarapuvalasa Junction", "Chittivalasa"
+  city                 String   @default("Thagarapuvalasa")
+  state                String   @default("Andhra Pradesh")
+  pincode              String   @default("531162")
+  latitude             Float
+  longitude            Float
+  addressType          String   @default("HOME") // HOME, WORK, OTHER
+  deliveryInstructions String?
+  isDefault            Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  orders               Order[]
+}
+
+model Restaurant {
+  id                   String   @id @default("arabian-mandi-main")
+  name                 String   @default("Arabian Mandi")
+  tagline              String   @default("Authentic Arabian Flavours Delivered Across Thagarapuvalasa")
+  description          String   @default("Experience the royal taste of Yemen & Gulf traditions. Smoked fragrant basmati rice, tender roasted meats, authentic toum & fiery shatta.")
+  logo                 String?
+  coverImage           String?
+  address              String   @default("NH16 Highway Road, Near Sangivalasa Bridge, Thagarapuvalasa, Andhra Pradesh 531162")
+  latitude             Float    @default(17.9288)
+  longitude            Float    @default(83.4350)
+  phone                String   @default("+91 89192 34567")
+  email                String   @default("contact@arabianmandi.in")
+  openingHours         String   @default("11:00 AM")
+  closingHours         String   @default("11:30 PM")
+  isOpen               Boolean  @default(true)
+  deliveryRadiusKm     Float    @default(15.0)
+  minOrderAmount       Float    @default(200.0)
+  baseDeliveryFee      Float    @default(40.0)
+  freeDeliveryThreshold Float   @default(599.0)
+  taxPercentage        Float    @default(5.0) // 5% GST
+  packagingFee         Float    @default(25.0)
+  codEnabled           Boolean  @default(true)
+  cancellationAllowedMinutes Int @default(5)
+  estimatedPrepTimeMin Int      @default(25)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  image       String?
+  displayOrder Int       @default(0)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  items       MenuItem[]
+}
+
+model MenuItem {
+  id                 String           @id @default(uuid())
+  categoryId         String
+  category           Category         @relation(fields: [categoryId], references: [id])
+  name               String
+  slug               String           @unique
+  description        String
+  image              String
+  price              Float
+  discountedPrice    Float?
+  isVeg              Boolean          @default(false)
+  isAvailable        Boolean          @default(true)
+  isFeatured         Boolean          @default(false)
+  isBestseller       Boolean          @default(false)
+  preparationTimeMin Int              @default(25)
+  spiceLevel         String           @default("MEDIUM") // MILD, MEDIUM, SPICY, EXTRA_SPICY
+  servingSize        String           @default("SERVES_1_2") // SERVES_1, SERVES_1_2, SERVES_2_3, SERVES_4_6
+  servesCount        Int              @default(2)
+  ingredients        String?          // Comma-separated or JSON
+  sizesJson          String?          // e.g. [{"name":"Half","price":340},{"name":"Full","price":620}]
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  addons             MenuItemAddon[]
+  orderItems         OrderItem[]
+}
+
+model MenuItemAddon {
+  id          String    @id @default(uuid())
+  menuItemId  String
+  menuItem    MenuItem  @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  name        String
+  price       Float
+  isAvailable Boolean   @default(true)
+}
+
+model Order {
+  id                   String              @id @default(uuid())
+  orderNumber          String              @unique // AM-20261004-000123
+  customerId           String
+  customer             User                @relation("CustomerOrders", fields: [customerId], references: [id])
+  addressId            String
+  address              Address             @relation(fields: [addressId], references: [id])
+  status               String              @default("PLACED") 
+  // PLACED, CONFIRMED, PREPARING, READY_FOR_PICKUP, OUT_FOR_DELIVERY, DELIVERED, CANCELLED, REFUND_INITIATED, REFUNDED
+  
+  subtotal             Float
+  discount             Float               @default(0.0)
+  deliveryFee          Float               @default(0.0)
+  tax                  Float               @default(0.0)
+  packagingFee         Float               @default(0.0)
+  totalAmount          Float
+  
+  appliedCoupon        String?
+  deliveryInstructions String?
+  kitchenNotes         String?
+  deliveryOtp          String              @default("1234")
+  estimatedDeliveryMin Int                 @default(45)
+
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  items                OrderItem[]
+  payment              Payment?
+  deliveryAssignment   DeliveryAssignment?
+  review               Review?
+  supportTickets       SupportTicket[]
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId  String
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id])
+  name        String
+  size        String?
+  price       Float
+  quantity    Int
+  addOnsJson  String?  // JSON array of selected addons
+  subtotal    Float
+}
+
+model Payment {
+  id                 String    @id @default(uuid())
+  orderId            String    @unique
+  order              Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  paymentMethod      String    // RAZORPAY, COD
+  status             String    @default("PENDING") // PENDING, PAID, FAILED, REFUNDED
+  amount             Float
+  currency           String    @default("INR")
+  razorpayOrderId    String?
+  razorpayPaymentId  String?
+  razorpaySignature  String?
+  refundId           String?
+  refundAmount       Float?
+  paidAt             DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model DeliveryAssignment {
+  id                   String    @id @default(uuid())
+  orderId              String    @unique
+  order                Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  deliveryPartnerId    String
+  deliveryPartner      User      @relation("PartnerDeliveries", fields: [deliveryPartnerId], references: [id])
+  status               String    @default("ASSIGNED") // ASSIGNED, ACCEPTED, REJECTED, ARRIVED_AT_RESTAURANT, PICKED_UP, DELIVERED
+  earnings             Float     @default(50.0)
+  distanceKm           Float     @default(3.5)
+  assignedAt           DateTime  @default(now())
+  acceptedAt           DateTime?
+  pickedUpAt           DateTime?
+  deliveredAt          DateTime?
+  notes                String?
+}
+
+model DeliveryLocation {
+  id                String    @id @default(uuid())
+  deliveryPartnerId String
+  deliveryPartner   User      @relation(fields: [deliveryPartnerId], references: [id], onDelete: Cascade)
+  orderId           String?
+  latitude          Float
+  longitude         Float
+  heading           Float?
+  speed             Float?
+  timestamp         DateTime  @default(now())
+}
+
+model Coupon {
+  id             String    @id @default(uuid())
+  code           String    @unique
+  title          String
+  description    String
+  discountType   String    // PERCENTAGE, FLAT
+  discountValue  Float
+  minOrderAmount Float     @default(0.0)
+  maxDiscount    Float?
+  usageLimit     Int?
+  timesUsed      Int       @default(0)
+  expiresAt      DateTime?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model DeliveryZone {
+  id                 String   @id @default(uuid())
+  name               String   // "Zone A - Thagarapuvalasa & Sangivalasa", "Zone B - Anandapuram / Bheemili", etc.
+  minDistanceKm      Float
+  maxDistanceKm      Float
+  deliveryFee        Float
+  estimatedTimeMin   Int
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Review {
+  id             String    @id @default(uuid())
+  orderId        String    @unique
+  order          Order     @relation(fields: [orderId], references: [id])
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  rating         Int       @default(5) // 1 to 5
+  foodRating     Int       @default(5)
+  deliveryRating Int       @default(5)
+  comment        String
+  isApproved     Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model SupportTicket {
+  id          String    @id @default(uuid())
+  ticketId    String    @unique // TKT-10023
+  customerId  String
+  customer    User      @relation(fields: [customerId], references: [id])
+  orderId     String?
+  order       Order?    @relation(fields: [orderId], references: [id])
+  issueType   String    // MISSING_ITEM, LATE_DELIVERY, WRONG_ITEM, PAYMENT_ISSUE, CANCELLATION, OTHER
+  subject     String
+  message     String
+  status      String    @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  adminNotes  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("INFO") // ORDER_UPDATE, PROMO, SYSTEM
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
