@@ -448,21 +448,21 @@ export default function DeliveryPartnerPage() {
                   <label className="text-xs font-semibold text-slate-300 block">
                     Verify Customer 4-Digit Delivery OTP to Complete:
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
                       maxLength={4}
                       value={otpInput}
                       onChange={(e) => setOtpInput(e.target.value)}
                       placeholder="e.g. 4821"
-                      className="font-mono text-center tracking-widest text-lg font-black w-36 px-3 py-2.5 rounded-xl bg-mandi-card border border-mandi-border text-white focus:border-gold-500 focus:outline-none"
+                      className="font-mono text-center tracking-widest text-lg font-black w-full sm:w-36 py-3 px-3 rounded-xl bg-mandi-card border border-mandi-border text-white focus:border-gold-500 focus:outline-none"
                     />
                     <button
                       onClick={() => handleDeliveryAction('DELIVER', activeDelivery.id)}
                       disabled={otpInput.length < 4 || actionLoading}
-                      className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-heading font-black text-xs tracking-wider shadow-lg"
+                      className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-heading font-black text-xs tracking-wider shadow-lg"
                     >
-                      {actionLoading ? 'VERIFYING...' : 'VERIFY OTP & MARK DELIVERED'}
+                      {actionLoading ? 'VERIFYING...' : 'VERIFY OTP & COMPLETE DELIVERY'}
                     </button>
                   </div>
                 </div>

@@ -191,7 +191,7 @@ export default function HomePage() {
             {/* Right Column: Grand Circular Platter Presentation (Image 1 Style) */}
             <div className="lg:col-span-6 flex justify-center relative">
               {/* Decorative Circular Rim Frame */}
-              <div className="relative w-[320px] h-[320px] sm:w-[440px] sm:h-[440px] md:w-[480px] md:h-[480px]">
+              <div className="relative w-[260px] h-[260px] min-[380px]:w-[300px] min-[380px]:h-[300px] sm:w-[440px] sm:h-[440px] md:w-[480px] md:h-[480px]">
                 {/* Glow ring */}
                 <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#d4af37]/20 via-[#ff7828]/15 to-transparent blur-xl" />
 
@@ -212,20 +212,20 @@ export default function HomePage() {
                 </div>
 
                 {/* Floating Gold Coin Emblem (Inspired by Image 1 & 4) */}
-                <div className="absolute -bottom-2 -left-2 sm:bottom-4 sm:left-4 z-20 bg-[#121216]/95 border border-[#d4af37]/40 rounded-2xl p-3 shadow-2xl backdrop-blur-md flex items-center gap-3">
-                  <div className="gold-seal-badge">
+                <div className="absolute bottom-1 left-1 sm:bottom-4 sm:left-4 z-20 bg-[#121216]/95 border border-[#d4af37]/40 rounded-2xl p-2.5 sm:p-3 shadow-2xl backdrop-blur-md flex items-center gap-2.5 sm:gap-3 max-w-[calc(100%-1rem)]">
+                  <div className="gold-seal-badge scale-90 sm:scale-100 flex-shrink-0">
                     <span>14</span>
                   </div>
-                  <div>
-                    <div className="text-[10px] font-cinzel text-[#a1a1aa] uppercase">Ancestral Recipe</div>
-                    <div className="text-xs font-bold text-[#fceda2]">14 Yemeni Secret Aromatics</div>
+                  <div className="overflow-hidden">
+                    <div className="text-[9px] sm:text-[10px] font-cinzel text-[#a1a1aa] uppercase truncate">Ancestral Recipe</div>
+                    <div className="text-[11px] sm:text-xs font-bold text-[#fceda2] truncate">14 Yemeni Secret Aromatics</div>
                   </div>
                 </div>
 
                 {/* Floating Price Seal */}
-                <div className="absolute top-4 -right-2 sm:top-8 sm:right-2 z-20 bg-[#121216]/95 border border-[#d4af37]/40 rounded-full px-4 py-2 shadow-2xl backdrop-blur-md">
-                  <span className="text-xs font-cinzel text-[#a1a1aa] mr-1">From</span>
-                  <span className="font-mono font-black text-sm text-[#fceda2]">₹280</span>
+                <div className="absolute top-2 right-2 sm:top-8 sm:right-2 z-20 bg-[#121216]/95 border border-[#d4af37]/40 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 shadow-2xl backdrop-blur-md">
+                  <span className="text-[10px] sm:text-xs font-cinzel text-[#a1a1aa] mr-1">From</span>
+                  <span className="font-mono font-black text-xs sm:text-sm text-[#fceda2]">₹280</span>
                 </div>
               </div>
             </div>
@@ -492,10 +492,10 @@ export default function HomePage() {
                   { name: 'Royal Prawns Butter Mandi', solo: 350, squad: 1300 },
                   { name: 'Paneer Makhani Veg Mandi (Pure Veg)', solo: 230, squad: 880 },
                 ].map((dish) => (
-                  <div key={dish.name} className="flex items-baseline justify-between text-xs sm:text-sm">
-                    <span className="font-medium text-[#f4f4f5] whitespace-nowrap">{dish.name}</span>
-                    <span className="menu-dots" />
-                    <div className="font-mono font-bold text-[#fceda2] whitespace-nowrap flex items-center gap-2">
+                  <div key={dish.name} className="flex items-baseline justify-between text-xs sm:text-sm gap-2">
+                    <span className="font-medium text-[#f4f4f5]">{dish.name}</span>
+                    <span className="menu-dots min-w-[8px]" />
+                    <div className="font-mono font-bold text-[#fceda2] whitespace-nowrap flex items-center gap-1.5 flex-shrink-0">
                       <span>₹{dish.solo}</span>
                       <span className="text-[#a1a1aa] font-normal text-xs">/ ₹{dish.squad}</span>
                     </div>
@@ -540,10 +540,10 @@ export default function HomePage() {
                   { name: 'Royal Melted Cheese Kunafa', price: 240 },
                   { name: 'Nutella Cream Kunafa Royale', price: 260 },
                 ].map((dish) => (
-                  <div key={dish.name} className="flex items-baseline justify-between text-xs sm:text-sm">
-                    <span className="font-medium text-[#f4f4f5] whitespace-nowrap">{dish.name}</span>
-                    <span className="menu-dots" />
-                    <span className="font-mono font-bold text-[#fceda2] whitespace-nowrap">₹{dish.price}</span>
+                  <div key={dish.name} className="flex items-baseline justify-between text-xs sm:text-sm gap-2">
+                    <span className="font-medium text-[#f4f4f5]">{dish.name}</span>
+                    <span className="menu-dots min-w-[8px]" />
+                    <span className="font-mono font-bold text-[#fceda2] whitespace-nowrap flex-shrink-0">₹{dish.price}</span>
                   </div>
                 ))}
               </div>

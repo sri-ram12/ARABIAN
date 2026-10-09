@@ -38,7 +38,7 @@ export default function TrackSearchPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-16 sm:py-24 space-y-8">
+    <div className="max-w-3xl mx-auto px-4 py-12 sm:py-24 pb-28 sm:pb-24 space-y-8">
       <div className="text-center space-y-3">
         <div className="w-14 h-14 rounded-2xl bg-gold-500/10 text-gold-400 border border-gold-500/30 flex items-center justify-center mx-auto shadow-gold-sm">
           <Bike className="w-7 h-7" />

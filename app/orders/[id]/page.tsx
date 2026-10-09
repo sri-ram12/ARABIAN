@@ -222,7 +222,7 @@ export default function OrderTrackingPage({
   const isCancelled = order.status === 'CANCELLED';
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 md:pb-10 space-y-6 sm:space-y-8">
       {/* Top Banner / Order Info */}
       <div className="bg-mandi-card border border-mandi-border rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
         <div>

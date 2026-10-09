@@ -90,7 +90,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 text-[#f4f4f5]">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 pb-28 lg:pb-12 text-[#f4f4f5]">
       {/* Breadcrumb & Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-[#272730] gap-4 mb-6">
         <div>
@@ -399,6 +399,26 @@ export default function CartPage() {
               <span>Safe & Secure UPI, Cards & Cash on Delivery</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Sticky Bottom Checkout Bar */}
+      <div
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0c0c10]/95 backdrop-blur-xl border-t border-[#d4af37]/30 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]"
+        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+      >
+        <div className="flex items-center justify-between gap-4 max-w-md mx-auto">
+          <div>
+            <span className="text-[10px] font-cinzel text-[#a1a1aa] block uppercase tracking-wider">Total</span>
+            <span className="text-xl font-mono font-black text-[#fceda2]">₹{grandTotal}</span>
+          </div>
+          <NextLink
+            href="/checkout"
+            className="flex-1 btn-royal-gold py-3 px-4 text-xs font-bold text-center flex items-center justify-center gap-2 shadow-gold-sm"
+          >
+            <span>PROCEED TO CHECKOUT</span>
+            <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+          </NextLink>
         </div>
       </div>
 

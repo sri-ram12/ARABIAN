@@ -80,7 +80,11 @@ export default function CheckoutPage() {
           setSavedAddresses(data.addresses);
           if (!selectedAddress && data.addresses.length > 0) {
             setSelectedAddress(data.addresses[0]);
+          } else if (data.addresses.length === 0) {
+            setShowNewAddressForm(true);
           }
+        } else {
+          setShowNewAddressForm(true);
         }
       } catch (e) {
         console.error('Failed to load addresses', e);
@@ -262,7 +266,7 @@ export default function CheckoutPage() {
     <>
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 text-[#f4f4f5]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-32 lg:pb-12 text-[#f4f4f5]">
         <h1 className="font-cinzel text-2xl sm:text-3xl font-bold text-[#fceda2] mb-1">
           Secure Royal Checkout
         </h1>
@@ -346,7 +350,20 @@ export default function CheckoutPage() {
               {/* Saved Addresses List */}
               {!showNewAddressForm && (
                 <div className="space-y-3">
-                  {savedAddresses.map((addr) => {
+                  {savedAddresses.length === 0 ? (
+                    <div className="p-5 rounded-xl bg-[#141419] border border-dashed border-[#272730] text-center space-y-2.5">
+                      <p className="text-xs text-[#a1a1aa]">No saved delivery address found.</p>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewAddressForm(true)}
+                        className="btn-royal-gold px-4 py-2 text-xs inline-flex items-center gap-1.5"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Your Delivery Address</span>
+                      </button>
+                    </div>
+                  ) : (
+                    savedAddresses.map((addr) => {
                     const isSelected = selectedAddress?.id === addr.id;
                     return (
                       <div
@@ -380,9 +397,10 @@ export default function CheckoutPage() {
                         </div>
                       </div>
                     );
-                  })}
-                </div>
-              )}
+                  })
+                )}
+              </div>
+            )}
 
               {/* New Address Form */}
               {showNewAddressForm && (
@@ -682,6 +700,31 @@ export default function CheckoutPage() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Sticky Order Placement Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0e0e12]/95 backdrop-blur-xl border-t border-[#272730] p-4 safe-area-bottom shadow-2xl">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <span className="text-[10px] text-[#a1a1aa] block uppercase tracking-wider font-sans">Total Bill</span>
+            <span className="font-mono font-black text-xl text-[#fceda2]">₹{grandTotal}</span>
+          </div>
+          <button
+            type="button"
+            onClick={handlePlaceOrder}
+            disabled={isPlacingOrder}
+            className="btn-royal-gold py-3 px-6 text-xs tracking-wider flex-1 flex items-center justify-center gap-2 font-cinzel font-bold disabled:opacity-60"
+          >
+            {isPlacingOrder ? (
+              <span>DISPATCHING...</span>
+            ) : (
+              <>
+                <span>{paymentMethod === 'COD' ? 'PLACE ORDER (COD)' : 'PAY & ORDER'}</span>
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              </>
+            )}
+          </button>
         </div>
       </div>
     </>

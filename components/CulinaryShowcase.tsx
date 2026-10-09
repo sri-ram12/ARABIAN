@@ -175,7 +175,7 @@ export default function CulinaryShowcase({ onSelectItem, className = '' }: Culin
       </div>
 
       {/* Navigation Pills */}
-      <div className="mt-8 flex items-center justify-center gap-2 overflow-x-auto pb-2 scrollbar-none relative z-20">
+      <div className="mt-8 flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-2 scrollbar-none relative z-20 px-1 -mx-2 sm:mx-0">
         {stories.map((story) => {
           const isActive = activeTab === story.id;
           return (

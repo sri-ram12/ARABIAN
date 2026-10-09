@@ -87,12 +87,12 @@ export default function FireIntro({ onComplete }: FireIntroProps) {
         if (ctx) {
           ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-          // 1. Embers rising from bottom-left fire bowl
+          // 1. Embers rising from bottom-left fire bowl area
           if (Math.random() < 0.35) {
-            const bowlX = window.innerWidth * 0.12;
+            const bowlX = Math.max(25, window.innerWidth * 0.14);
             sparksRef.current.push({
-              x: bowlX + (Math.random() - 0.5) * 80,
-              y: window.innerHeight * 0.92,
+              x: bowlX + (Math.random() - 0.5) * Math.min(80, window.innerWidth * 0.2),
+              y: window.innerHeight * 0.90,
               vx: (Math.random() - 0.3) * 1.6,
               vy: -(2.0 + Math.random() * 3.5),
               size: 1.2 + Math.random() * 2.5,
@@ -102,12 +102,12 @@ export default function FireIntro({ onComplete }: FireIntroProps) {
             });
           }
 
-          // 2. Embers rising from bottom-right fire bowl
+          // 2. Embers rising from bottom-right fire bowl area
           if (Math.random() < 0.35) {
-            const bowlX = window.innerWidth * 0.88;
+            const bowlX = Math.min(window.innerWidth - 25, window.innerWidth * 0.86);
             sparksRef.current.push({
-              x: bowlX + (Math.random() - 0.5) * 80,
-              y: window.innerHeight * 0.92,
+              x: bowlX + (Math.random() - 0.5) * Math.min(80, window.innerWidth * 0.2),
+              y: window.innerHeight * 0.90,
               vx: (Math.random() - 0.7) * 1.6,
               vy: -(2.0 + Math.random() * 3.5),
               size: 1.2 + Math.random() * 2.5,
@@ -180,19 +180,23 @@ export default function FireIntro({ onComplete }: FireIntroProps) {
   return (
     <div
       id="arabian-intro-overlay"
-      className={`fixed inset-0 z-[999999] bg-[#000000] select-none overflow-hidden flex items-center justify-center transition-all duration-700 ease-out ${
+      onClick={handleDismiss}
+      className={`fixed inset-0 z-[999999] w-[100dvw] h-[100dvh] bg-[#050507] select-none overflow-hidden flex items-center justify-center transition-all duration-700 ease-out cursor-pointer ${
         fading
           ? 'opacity-0 scale-103 filter blur-md pointer-events-none'
           : 'opacity-100 scale-100 filter blur-0'
       }`}
     >
       {/* ─────────────────────────────────────────────────────────────
-          1. DISCREET SKIP BUTTON (Top Right)
+          1. DISCREET SKIP BUTTON (Top Right with iOS Safe Area)
          ───────────────────────────────────────────────────────────── */}
       <button
         type="button"
-        onClick={handleDismiss}
-        className="absolute top-5 right-5 sm:top-7 sm:right-7 z-50 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-black/75 hover:bg-black text-[#fceda2] hover:text-white border border-[#d4af37]/45 hover:border-[#ffd700] shadow-[0_0_20px_rgba(212,175,55,0.3)] backdrop-blur-md transition-all duration-300 cursor-pointer text-xs font-bold tracking-widest uppercase"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleDismiss();
+        }}
+        className="absolute top-[max(1rem,env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-50 flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-black/80 hover:bg-black text-[#fceda2] hover:text-white border border-[#d4af37]/50 hover:border-[#ffd700] shadow-[0_0_20px_rgba(212,175,55,0.4)] backdrop-blur-md transition-all duration-300 cursor-pointer text-xs font-bold tracking-widest uppercase active:scale-95"
         aria-label="Skip Intro"
       >
         <span>Skip</span>
@@ -200,22 +204,31 @@ export default function FireIntro({ onComplete }: FireIntroProps) {
       </button>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. 100% INTROVID MATCH — 1440P / 4K MASTER CINEMATIC SCENE
+          2. RESPONSIVE CINEMATIC MASTER SCENE (ALL DEVICES FIT)
          ───────────────────────────────────────────────────────────── */}
       <div className="relative w-full h-full flex items-center justify-center pointer-events-none overflow-hidden">
-        {/* Master 4K Scene with Slow Cinematic Camera Push-In */}
+        {/* Ambient Blurred Warm Glow Backdrop - eliminates harsh letterboxing on tall mobile screens */}
+        <div
+          className="absolute inset-0 bg-cover bg-center filter blur-3xl opacity-35 scale-125 pointer-events-none transition-opacity duration-1000"
+          style={{
+            backgroundImage: 'url(/images/arabian_intro_master.jpg)',
+          }}
+        />
+
+        {/* Master Scene: object-cover on mobile phones so it fills the screen with the royal crest & fire bowls;
+            object-contain on tablets & desktops so the full panoramic wide shot is pristine */}
         <img
           src="/images/arabian_intro_master.jpg"
-          alt="S & H Arabian Mandi"
-          className="w-full h-full max-w-[1500px] max-h-screen object-contain cinema-push-in"
+          alt="S & H Arabian Mandi Royal Intro"
+          className="w-full h-full object-cover sm:object-contain object-center max-w-[100dvw] max-h-[100dvh] cinema-push-in relative z-10"
           style={{
-            imageRendering: 'crisp-edges',
+            imageRendering: 'auto',
           }}
         />
 
         {/* Ambient Warm Candle & Flame Light Pulse */}
         <div
-          className="absolute inset-0 pointer-events-none mix-blend-screen opacity-30 animate-pulse"
+          className="absolute inset-0 z-15 pointer-events-none mix-blend-screen opacity-30 animate-pulse"
           style={{
             background:
               'radial-gradient(ellipse at 50% 60%, rgba(255,160,20,0.35) 0%, rgba(212,175,55,0.15) 40%, transparent 75%)',
@@ -224,7 +237,7 @@ export default function FireIntro({ onComplete }: FireIntroProps) {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. SUPERSAMPLED 1440P+ LIVE RISING FIRE EMBERS CANVAS
+          3. SUPERSAMPLED LIVE RISING FIRE EMBERS CANVAS
          ───────────────────────────────────────────────────────────── */}
       <canvas
         ref={canvasRef}
@@ -234,7 +247,7 @@ export default function FireIntro({ onComplete }: FireIntroProps) {
       {/* ─────────────────────────────────────────────────────────────
           4. SLEEK GOLD PROGRESS TIMELINE AT BOTTOM EDGE
          ───────────────────────────────────────────────────────────── */}
-      <div className="absolute bottom-0 inset-x-0 h-1 bg-white/10 z-50 pointer-events-none">
+      <div className="absolute bottom-[env(safe-area-inset-bottom,0px)] inset-x-0 h-1 bg-white/10 z-50 pointer-events-none">
         <div
           className="h-full bg-gradient-to-r from-[#d4af37] via-[#ffd700] to-[#ff7828] transition-all duration-75 ease-linear shadow-[0_0_15px_#ffd700]"
           style={{ width: `${progress}%` }}
@@ -255,7 +268,7 @@ export default function FireIntro({ onComplete }: FireIntroProps) {
             transform: scale(1);
           }
           100% {
-            transform: scale(1.05);
+            transform: scale(1.06);
           }
         }
       `}</style>

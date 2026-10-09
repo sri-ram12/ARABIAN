@@ -70,16 +70,16 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20 gap-4">
             {/* Left: Brand Logo & Insignia */}
-            <NextLink href="/" className="flex items-center gap-3 group flex-shrink-0">
-              <div className="gold-seal-badge group-hover:scale-105 transition-transform">
+            <NextLink href="/" className="flex items-center gap-2 sm:gap-3 group flex-shrink-0 max-w-[200px] min-[380px]:max-w-[240px] sm:max-w-none">
+              <div className="gold-seal-badge group-hover:scale-105 transition-transform flex-shrink-0">
                 <span>S&H</span>
               </div>
-              <div className="flex flex-col">
-                <span className="font-cinzel text-lg sm:text-xl font-bold tracking-widest text-[#fceda2] leading-none group-hover:text-white transition-colors">
-                  S & H <span className="gold-gradient-text">ARABIAN MANDI</span>
+              <div className="flex flex-col overflow-hidden">
+                <span className="font-cinzel text-sm min-[380px]:text-base sm:text-xl font-bold tracking-wider sm:tracking-widest text-[#fceda2] leading-none group-hover:text-white transition-colors truncate">
+                  S & H <span className="gold-gradient-text">ARABIAN</span>
                 </span>
-                <span className="text-[10px] font-cinzel text-[#a1a1aa] tracking-widest uppercase mt-1">
-                  Yemeni Royal Gastronomy
+                <span className="text-[9px] sm:text-[10px] font-cinzel text-[#a1a1aa] tracking-widest uppercase mt-1 truncate">
+                  Royal Gastronomy
                 </span>
               </div>
             </NextLink>

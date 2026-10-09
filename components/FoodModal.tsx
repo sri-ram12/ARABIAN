@@ -75,12 +75,12 @@ export default function FoodModal({ item, onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="bg-[#121216] rounded-3xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl relative border border-[#d4af37]/40 divide-y divide-[#272730] text-[#f4f4f5]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+      <div className="bg-[#121216] rounded-3xl w-full max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl relative border border-[#d4af37]/40 divide-y divide-[#272730] text-[#f4f4f5]">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/60 text-[#d4d4d8] hover:text-white border border-[#272730] shadow-md transition-colors"
+          className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-20 p-2 rounded-full bg-black/70 text-[#d4d4d8] hover:text-white border border-[#272730] shadow-md transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -237,21 +237,24 @@ export default function FoodModal({ item, onClose }: Props) {
         </div>
 
         {/* Bottom CTA & Stepper */}
-        <div className="p-6 bg-[#0f0f13] flex items-center justify-between gap-4 sticky bottom-0 z-20 border-t border-[#272730]">
+        <div
+          className="p-4 sm:p-6 bg-[#0f0f13] flex items-center justify-between gap-3 sm:gap-4 sticky bottom-0 z-20 border-t border-[#272730]"
+          style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+        >
           {/* Quantity Stepper */}
-          <div className="flex items-center bg-[#18181f] border border-[#272730] rounded-xl overflow-hidden shadow-inner">
+          <div className="flex items-center bg-[#18181f] border border-[#272730] rounded-xl overflow-hidden shadow-inner flex-shrink-0">
             <button
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="p-2.5 text-[#d4af37] hover:bg-[#202028] transition-colors"
+              className="p-2 sm:p-2.5 text-[#d4af37] hover:bg-[#202028] transition-colors"
             >
               <Minus className="w-4 h-4 stroke-[2.5]" />
             </button>
-            <span className="px-3 font-mono font-bold text-sm text-[#fceda2] min-w-[28px] text-center">
+            <span className="px-2.5 sm:px-3 font-mono font-bold text-sm text-[#fceda2] min-w-[28px] text-center">
               {quantity}
             </span>
             <button
               onClick={() => setQuantity(quantity + 1)}
-              className="p-2.5 text-[#d4af37] hover:bg-[#202028] transition-colors"
+              className="p-2 sm:p-2.5 text-[#d4af37] hover:bg-[#202028] transition-colors"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
             </button>
@@ -260,7 +263,7 @@ export default function FoodModal({ item, onClose }: Props) {
           {/* Add to Cart Button */}
           <button
             onClick={handleAddToCart}
-            className="flex-1 btn-royal-gold py-3 px-6 text-xs sm:text-sm flex items-center justify-between"
+            className="flex-1 btn-royal-gold py-3 px-4 sm:px-6 text-xs sm:text-sm flex items-center justify-between"
           >
             <span>ADD TO FEAST</span>
             <span className="font-mono font-black">₹{totalPrice}</span>

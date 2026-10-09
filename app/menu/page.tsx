@@ -118,7 +118,7 @@ function MenuContent() {
   };
 
   return (
-    <div className="bg-[#09090b] min-h-screen pb-24 text-[#f4f4f5] arabian-pattern">
+    <div className="bg-[#09090b] min-h-screen pb-32 sm:pb-24 text-[#f4f4f5] arabian-pattern">
       {/* 1. BREADCRUMBS */}
       <div className="bg-[#0d0d11] border-b border-[#272730]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 text-xs text-[#a1a1aa] flex items-center gap-1.5 overflow-x-auto font-cinzel">
@@ -293,39 +293,63 @@ function MenuContent() {
       </div>
 
       {/* 4. MAIN CONTENT (ORDER ONLINE 2-COLUMN VIEW OR SLATE BOARD) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
         {activeTab === 'order' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* LEFT COLUMN: STICKY CATEGORIES SIDEBAR */}
-            <div className="lg:col-span-3 sticky top-36 z-20">
-              <div className="slate-plate-card rounded-2xl p-3 space-y-1">
-                <div className="px-3 py-2 text-[10px] font-cinzel uppercase tracking-wider text-[#d4af37] border-b border-[#272730]">
-                  Menu Categories ({groupedCategories.length})
-                </div>
-
-                <div className="max-h-[calc(100vh-220px)] overflow-y-auto space-y-1 pt-1 pr-1">
-                  {groupedCategories.map((cat) => {
-                    const isActive = activeCategorySlug === cat.slug;
-                    return (
-                      <button
-                        key={cat.id}
-                        onClick={() => scrollToCategory(cat.slug)}
-                        className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-cinzel transition-all flex items-center justify-between ${
-                          isActive
-                            ? 'bg-[#d4af37]/15 text-[#fceda2] font-bold border-l-4 border-[#d4af37]'
-                            : 'text-[#d4d4d8] hover:bg-[#18181f] hover:text-white'
-                        }`}
-                      >
-                        <span className="truncate">{cat.name}</span>
-                        <span className="text-[10px] font-mono text-[#a1a1aa] ml-2">
-                          ({cat.items.length})
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+          <div>
+            {/* MOBILE ONLY: STICKY HORIZONTAL CATEGORY PILL STRIP */}
+            <div className="lg:hidden sticky top-32 z-20 bg-[#09090b]/95 backdrop-blur-md py-2.5 -mx-4 px-4 border-b border-[#272730] mb-6">
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5">
+                {groupedCategories.map((cat) => {
+                  const isActive = activeCategorySlug === cat.slug;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => scrollToCategory(cat.slug)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-cinzel whitespace-nowrap transition-all flex items-center gap-1.5 flex-shrink-0 ${
+                        isActive
+                          ? 'bg-[#d4af37] text-black font-bold shadow-gold-sm'
+                          : 'bg-[#141419] text-[#d4d4d8] hover:text-[#fceda2] border border-[#272730]'
+                      }`}
+                    >
+                      <span>{cat.name}</span>
+                      <span className="text-[10px] font-mono opacity-80">({cat.items.length})</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* DESKTOP ONLY: LEFT COLUMN STICKY CATEGORIES SIDEBAR */}
+              <div className="hidden lg:block lg:col-span-3 sticky top-36 z-20">
+                <div className="slate-plate-card rounded-2xl p-3 space-y-1">
+                  <div className="px-3 py-2 text-[10px] font-cinzel uppercase tracking-wider text-[#d4af37] border-b border-[#272730]">
+                    Menu Categories ({groupedCategories.length})
+                  </div>
+
+                  <div className="max-h-[calc(100vh-220px)] overflow-y-auto space-y-1 pt-1 pr-1">
+                    {groupedCategories.map((cat) => {
+                      const isActive = activeCategorySlug === cat.slug;
+                      return (
+                        <button
+                          key={cat.id}
+                          onClick={() => scrollToCategory(cat.slug)}
+                          className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-cinzel transition-all flex items-center justify-between ${
+                            isActive
+                              ? 'bg-[#d4af37]/15 text-[#fceda2] font-bold border-l-4 border-[#d4af37]'
+                              : 'text-[#d4d4d8] hover:bg-[#18181f] hover:text-white'
+                          }`}
+                        >
+                          <span className="truncate">{cat.name}</span>
+                          <span className="text-[10px] font-mono text-[#a1a1aa] ml-2">
+                            ({cat.items.length})
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
 
             {/* RIGHT COLUMN: DISHES FEED */}
             <div className="lg:col-span-9 space-y-12">
@@ -448,6 +472,7 @@ function MenuContent() {
                   </div>
                 </div>
               ))}
+              </div>
             </div>
           </div>
         ) : (
@@ -485,13 +510,13 @@ function MenuContent() {
                       <div
                         key={it.id}
                         onClick={() => setSelectedFood(it)}
-                        className="flex items-baseline justify-between text-xs sm:text-sm hover:text-[#fceda2] cursor-pointer group transition-colors"
+                        className="flex items-baseline justify-between text-xs sm:text-sm hover:text-[#fceda2] cursor-pointer group transition-colors gap-2"
                       >
-                        <span className="font-medium text-[#f4f4f5] group-hover:text-[#fceda2] whitespace-nowrap">
+                        <span className="font-medium text-[#f4f4f5] group-hover:text-[#fceda2]">
                           {it.name}
                         </span>
-                        <span className="menu-dots" />
-                        <span className="font-mono font-bold text-[#fceda2] whitespace-nowrap">
+                        <span className="menu-dots min-w-[8px]" />
+                        <span className="font-mono font-bold text-[#fceda2] whitespace-nowrap flex-shrink-0">
                           ₹{it.price}
                         </span>
                       </div>
@@ -504,12 +529,12 @@ function MenuContent() {
         )}
       </div>
 
-      {/* 5. FLOATING BOTTOM CART BAR */}
+      {/* 5. FLOATING BOTTOM CART BAR - ELEVATED ABOVE BOTTOMNAV ON MOBILE */}
       {totalItemsCount > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-lg">
+        <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:bottom-6 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-lg">
           <NextLink
             href="/cart"
-            className="flex items-center justify-between p-4 rounded-2xl bg-[#121216] border border-[#d4af37] text-white shadow-2xl backdrop-blur-xl group hover:scale-[1.02] transition-transform"
+            className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-[#121216] border border-[#d4af37] text-white shadow-2xl backdrop-blur-xl group hover:scale-[1.02] transition-transform"
           >
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#d4af37] to-[#b8860b] text-black font-cinzel font-black text-sm flex items-center justify-center">

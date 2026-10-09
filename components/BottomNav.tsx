@@ -12,6 +12,16 @@ export default function BottomNav() {
   const { totalItemsCount } = useCart();
   const { user } = useAuth();
 
+  // Hide on operational portal screens and focused checkout screens
+  if (
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/delivery') ||
+    pathname === '/cart' ||
+    pathname === '/checkout'
+  ) {
+    return null;
+  }
+
   const links = [
     { name: 'Home', href: '/', icon: Crown },
     { name: 'Menu', href: '/menu', icon: UtensilsCrossed },
@@ -21,7 +31,10 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#09090b]/95 backdrop-blur-xl border-t border-[#272730] px-2 py-2 safe-area-pb shadow-2xl">
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#09090b]/95 backdrop-blur-xl border-t border-[#272730] px-2 pt-2 shadow-2xl transition-transform"
+      style={{ paddingBottom: 'max(0.6rem, env(safe-area-inset-bottom))' }}
+    >
       <div className="grid grid-cols-5 items-center justify-around">
         {links.map((link) => {
           const isActive = pathname === link.href;
