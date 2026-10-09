@@ -17,6 +17,9 @@ import {
   MapPin,
   RotateCcw,
   Sparkles,
+  MessageCircle,
+  Share2,
+  XCircle,
 } from 'lucide-react';
 import LiveTrackingMap from '@/components/LiveTrackingMap';
 import { useCart } from '@/context/CartContext';
@@ -47,6 +50,9 @@ export default function OrderTrackingPage({
   const [reviewComment, setReviewComment] = useState('');
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState('Change of plans / Ordered by mistake');
+  const [isCancelling, setIsCancelling] = useState(false);
 
   // Fetch Order Details
   const fetchOrder = async () => {
@@ -158,6 +164,38 @@ export default function OrderTrackingPage({
     router.push('/cart');
   };
 
+  // Order Cancellation Handler (Allowed when PLACED or CONFIRMED)
+  const handleCancelOrder = async () => {
+    if (!order) return;
+    setIsCancelling(true);
+    try {
+      const res = await fetch(`/api/orders/${order.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'CANCEL', reason: cancelReason }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShowCancelModal(false);
+        fetchOrder();
+      } else {
+        alert(data.message || 'Failed to cancel order');
+      }
+    } catch (e) {
+      alert('Unable to cancel order right now. Please call restaurant directly.');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  // WhatsApp Order Sharing
+  const handleShareOrder = () => {
+    if (!order || typeof window === 'undefined') return;
+    const shareUrl = window.location.href;
+    const text = `Tracking my Arabian Mandi Feast (#${order.orderNumber}): ${shareUrl}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center space-y-4">
@@ -217,6 +255,52 @@ export default function OrderTrackingPage({
               Share with delivery rider upon arrival
             </span>
           </div>
+        )}
+      </div>
+
+      {/* Instant Support, WhatsApp & Cancellation Bar */}
+      <div className="bg-mandi-card border border-mandi-border rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* WhatsApp Restaurant Support */}
+          <a
+            href={`https://wa.me/918919234567?text=${encodeURIComponent(`Hi Arabian Mandi, I have a question regarding my order ${order.orderNumber}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3.5 py-2 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center gap-2 transition-colors shadow-sm"
+          >
+            <MessageCircle className="w-4 h-4 text-emerald-400" />
+            <span>Chat on WhatsApp</span>
+          </a>
+
+          {/* Call Restaurant */}
+          <a
+            href="tel:+918919234567"
+            className="px-3.5 py-2 rounded-xl bg-mandi-surface hover:bg-mandi-elevated border border-mandi-border text-slate-200 font-semibold text-xs flex items-center gap-2 transition-colors"
+          >
+            <Phone className="w-3.5 h-3.5 text-gold-400" />
+            <span>Call Restaurant</span>
+          </a>
+
+          {/* Share Live Tracking */}
+          <button
+            onClick={handleShareOrder}
+            className="px-3.5 py-2 rounded-xl bg-mandi-surface hover:bg-mandi-elevated border border-mandi-border text-slate-300 font-semibold text-xs flex items-center gap-2 transition-colors"
+            title="Share with family or friends"
+          >
+            <Share2 className="w-3.5 h-3.5 text-blue-400" />
+            <span>Share Tracking</span>
+          </button>
+        </div>
+
+        {/* Self-cancellation window if order is PLACED or CONFIRMED */}
+        {['PLACED', 'CONFIRMED'].includes(order.status) && (
+          <button
+            onClick={() => setShowCancelModal(true)}
+            className="px-3.5 py-2 rounded-xl bg-red-950/40 hover:bg-red-950 border border-red-500/30 text-red-300 font-semibold text-xs flex items-center gap-1.5 transition-colors ml-auto"
+          >
+            <XCircle className="w-3.5 h-3.5 text-red-400" />
+            <span>Cancel Order</span>
+          </button>
         )}
       </div>
 
@@ -449,6 +533,55 @@ export default function OrderTrackingPage({
           </div>
         </div>
       </div>
+
+      {/* Cancel Order Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-mandi-card border border-mandi-border max-w-md w-full rounded-2xl p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center gap-2 text-red-400 font-bold text-base">
+              <AlertCircle className="w-5 h-5" />
+              <span>Cancel Order #{order.orderNumber}?</span>
+            </div>
+            <p className="text-xs text-slate-300">
+              Are you sure you want to cancel this order? If you paid online, a full refund will be recorded to your account.
+            </p>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-400 block">
+                Please select a reason:
+              </label>
+              <select
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                className="w-full bg-mandi-surface border border-mandi-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-gold-500"
+              >
+                <option value="Change of plans / Ordered by mistake">Change of plans / Ordered by mistake</option>
+                <option value="Need to change delivery address">Need to change delivery address</option>
+                <option value="Forgot to apply coupon code">Forgot to apply coupon code</option>
+                <option value="Delivery time is too long">Delivery time is too long</option>
+                <option value="Other reason">Other reason</option>
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                disabled={isCancelling}
+                className="px-4 py-2 rounded-xl bg-mandi-surface hover:bg-mandi-elevated text-xs font-semibold text-slate-300"
+              >
+                Keep Order
+              </button>
+              <button
+                onClick={handleCancelOrder}
+                disabled={isCancelling}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-xs font-bold text-white shadow-md disabled:opacity-50"
+              >
+                {isCancelling ? 'Cancelling...' : 'Confirm Cancellation'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

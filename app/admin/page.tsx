@@ -26,13 +26,26 @@ import {
   ArrowUpRight,
   Eye,
   RefreshCw,
+  Volume2,
+  VolumeX,
+  Phone,
+  MessageCircle,
+  Tag,
+  Star,
+  LifeBuoy,
+  Check,
+  AlertCircle,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'analytics' | 'orders' | 'menu' | 'settings'>('analytics');
+  const [activeTab, setActiveTab] = useState<
+    'analytics' | 'orders' | 'menu' | 'coupons' | 'reviews' | 'support' | 'settings'
+  >('analytics');
   const [metrics, setMetrics] = useState<any>(null);
   const [popularDishes, setPopularDishes] = useState<any[]>([]);
   const [revenueTrends, setRevenueTrends] = useState<any[]>([]);
@@ -42,6 +55,18 @@ export default function AdminDashboardPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
   const [riders, setRiders] = useState<any[]>([]);
+  const [coupons, setCoupons] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [supportTickets, setSupportTickets] = useState<any[]>([]);
+  const [showAddCouponModal, setShowAddCouponModal] = useState(false);
+  const [newCoupon, setNewCoupon] = useState({
+    code: '',
+    title: '',
+    description: '',
+    discountType: 'FLAT',
+    discountValue: 50,
+    minOrderAmount: 299,
+  });
 
   // Filters state for Orders
   const [orderStatusFilter, setOrderStatusFilter] = useState('ALL');
@@ -66,6 +91,26 @@ export default function AdminDashboardPage() {
   });
 
   const [loading, setLoading] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  const playAdminChime = () => {
+    if (!soundEnabled || typeof window === 'undefined') return;
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime); // E5
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.12); // A5
+      osc.frequency.setValueAtTime(1046.50, ctx.currentTime + 0.24); // C6
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.65);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.65);
+    } catch (e) {}
+  };
 
   // Protect admin route
   useEffect(() => {
@@ -77,18 +122,35 @@ export default function AdminDashboardPage() {
   // Load Dashboard Data
   const loadDashboard = async () => {
     try {
-      const [dashRes, ordersRes, menuRes, settingsRes] = await Promise.all([
-        fetch('/api/admin/dashboard'),
-        fetch(`/api/admin/orders?status=${orderStatusFilter}&dateRange=${orderDateFilter}&search=${orderSearch}`),
-        fetch('/api/admin/menu'),
-        fetch('/api/admin/settings'),
-      ]);
+      const [dashRes, ordersRes, menuRes, settingsRes, couponsRes, reviewsRes, supportRes] =
+        await Promise.all([
+          fetch('/api/admin/dashboard'),
+          fetch(
+            `/api/admin/orders?status=${orderStatusFilter}&dateRange=${orderDateFilter}&search=${orderSearch}`
+          ),
+          fetch('/api/admin/menu'),
+          fetch('/api/admin/settings'),
+          fetch('/api/admin/coupons'),
+          fetch('/api/admin/reviews'),
+          fetch('/api/admin/support'),
+        ]);
 
-      const [dashData, ordersData, menuData, settingsData] = await Promise.all([
+      const [
+        dashData,
+        ordersData,
+        menuData,
+        settingsData,
+        couponsData,
+        reviewsData,
+        supportData,
+      ] = await Promise.all([
         dashRes.json(),
         ordersRes.json(),
         menuRes.json(),
         settingsRes.json(),
+        couponsRes.json(),
+        reviewsRes.json(),
+        supportRes.json(),
       ]);
 
       if (dashData.success) {
@@ -99,17 +161,12 @@ export default function AdminDashboardPage() {
         setRiders(dashData.riders || []);
       }
 
-      if (ordersData.success) {
-        setOrders(ordersData.orders || []);
-      }
-
-      if (menuData.success) {
-        setMenuItems(menuData.items || []);
-      }
-
-      if (settingsData.success) {
-        setSettings(settingsData.restaurant);
-      }
+      if (ordersData.success) setOrders(ordersData.orders || []);
+      if (menuData.success) setMenuItems(menuData.items || []);
+      if (settingsData.success) setSettings(settingsData.restaurant);
+      if (couponsData.success) setCoupons(couponsData.coupons || []);
+      if (reviewsData.success) setReviews(reviewsData.reviews || []);
+      if (supportData.success) setSupportTickets(supportData.tickets || []);
     } catch (e) {
       console.error('Failed to load admin data:', e);
     } finally {
@@ -117,9 +174,94 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleToggleCoupon = async (id: string, currentStatus: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/coupons/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !currentStatus }),
+      });
+      if (res.ok) loadDashboard();
+    } catch (e) {}
+  };
+
+  const handleCreateCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/admin/coupons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCoupon),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShowAddCouponModal(false);
+        setNewCoupon({
+          code: '',
+          title: '',
+          description: '',
+          discountType: 'FLAT',
+          discountValue: 50,
+          minOrderAmount: 299,
+        });
+        loadDashboard();
+      } else {
+        alert(data.message || 'Failed to create coupon');
+      }
+    } catch (e) {
+      alert('Failed to create coupon');
+    }
+  };
+
+  const handleToggleReview = async (id: string, currentApproved: boolean) => {
+    try {
+      const res = await fetch('/api/admin/reviews', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewId: id, isApproved: !currentApproved }),
+      });
+      if (res.ok) loadDashboard();
+    } catch (e) {}
+  };
+
+  const handleResolveTicket = async (ticketId: string) => {
+    try {
+      const res = await fetch('/api/admin/support', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ticketId,
+          status: 'RESOLVED',
+          adminNotes: 'Resolved by store manager',
+        }),
+      });
+      if (res.ok) loadDashboard();
+    } catch (e) {}
+  };
+
   useEffect(() => {
     loadDashboard();
   }, [orderStatusFilter, orderDateFilter, orderSearch]);
+
+  // Real-Time SSE listener for incoming orders
+  useEffect(() => {
+    if (!user || user.role !== 'ADMIN') return;
+
+    const eventSource = new EventSource('/api/events?role=ADMIN');
+    eventSource.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+        if (payload.type === 'ORDER_CREATED') {
+          playAdminChime();
+        }
+        loadDashboard();
+      } catch (err) {}
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [user, soundEnabled]);
 
   // Status Update Handler
   const handleUpdateOrderStatus = async (orderId: string, status: string) => {
@@ -292,6 +434,27 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-colors ${
+              soundEnabled
+                ? 'bg-emerald-950 text-emerald-400 border-emerald-500/40'
+                : 'bg-mandi-surface text-slate-400 border-mandi-border'
+            }`}
+            title={soundEnabled ? 'Live Order Chime Active' : 'Sound Muted'}
+          >
+            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            <span className="hidden sm:inline">{soundEnabled ? 'Chime Active' : 'Muted'}</span>
+          </button>
+
+          <button
+            onClick={loadDashboard}
+            className="p-2.5 rounded-xl bg-mandi-surface hover:bg-mandi-elevated border border-mandi-border text-slate-300 hover:text-white transition-colors"
+            title="Refresh Dashboard"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+
           <NextLink
             href="/admin/kitchen"
             className="px-4 py-2 rounded-xl bg-orange-600/20 text-orange-400 border border-orange-500/30 text-xs font-bold hover:bg-orange-600/30 flex items-center gap-1.5"
@@ -342,6 +505,39 @@ export default function AdminDashboardPage() {
           }`}
         >
           <UtensilsCrossed className="w-4 h-4" /> Menu & Dishes ({menuItems.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab('coupons')}
+          className={`pb-3 transition-colors border-b-2 flex items-center gap-2 ${
+            activeTab === 'coupons'
+              ? 'border-gold-500 text-gold-400'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Tag className="w-4 h-4" /> Promos & Coupons ({coupons.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab('reviews')}
+          className={`pb-3 transition-colors border-b-2 flex items-center gap-2 ${
+            activeTab === 'reviews'
+              ? 'border-gold-500 text-gold-400'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Star className="w-4 h-4" /> Diner Reviews ({reviews.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab('support')}
+          className={`pb-3 transition-colors border-b-2 flex items-center gap-2 ${
+            activeTab === 'support'
+              ? 'border-gold-500 text-gold-400'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <LifeBuoy className="w-4 h-4" /> Support ({supportTickets.filter(t => t.status === 'OPEN').length})
         </button>
 
         <button
@@ -607,6 +803,30 @@ export default function AdminDashboardPage() {
                           <Eye className="w-4 h-4" />
                         </NextLink>
 
+                        {/* 1-Tap WhatsApp Customer */}
+                        {ord.customer?.phone && (
+                          <a
+                            href={`https://wa.me/91${ord.customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${ord.customer.name}, this is Arabian Mandi Thagarapuvalasa regarding your order ${ord.orderNumber}.`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 inline-block"
+                            title="Chat on WhatsApp"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </a>
+                        )}
+
+                        {/* 1-Tap Call Customer */}
+                        {ord.customer?.phone && (
+                          <a
+                            href={`tel:${ord.customer.phone}`}
+                            className="p-1.5 rounded-lg bg-mandi-surface hover:bg-mandi-elevated text-blue-400 inline-block"
+                            title="Call Customer"
+                          >
+                            <Phone className="w-4 h-4" />
+                          </a>
+                        )}
+
                         {/* Quick Status Action */}
                         {ord.status === 'PLACED' && (
                           <button
@@ -781,6 +1001,315 @@ export default function AdminDashboardPage() {
             SAVE CONFIGURATION
           </button>
         </form>
+      )}
+
+      {/* 5. COUPONS TAB */}
+      {activeTab === 'coupons' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-heading font-bold text-lg text-white">
+                Promotional Coupons & Discounts ({coupons.length})
+              </h3>
+              <p className="text-xs text-slate-400">
+                Manage promo codes available to customers at checkout.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowAddCouponModal(true)}
+              className="px-4 py-2 rounded-xl bg-gold-gradient text-black font-heading font-bold text-xs tracking-wider shadow-gold-sm hover:brightness-110 flex items-center gap-1.5"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" /> Add Coupon
+            </button>
+          </div>
+
+          <div className="bg-mandi-card border border-mandi-border rounded-2xl overflow-hidden shadow-xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-mandi-surface/80 border-b border-mandi-border text-slate-400 uppercase text-[10px] tracking-wider">
+                  <tr>
+                    <th className="p-4">Code</th>
+                    <th className="p-4">Discount</th>
+                    <th className="p-4">Min Order</th>
+                    <th className="p-4">Description</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-mandi-border/60 text-slate-300">
+                  {coupons.map((c) => (
+                    <tr key={c.id} className="hover:bg-mandi-surface/40 transition-colors">
+                      <td className="p-4 font-mono font-bold text-gold-400">
+                        {c.code}
+                      </td>
+                      <td className="p-4 font-semibold text-white">
+                        {c.discountType === 'PERCENTAGE' ? `${c.discountValue}% OFF` : `₹${c.discountValue} FLAT`}
+                      </td>
+                      <td className="p-4 text-slate-300">
+                        ₹{c.minOrderAmount || 0}
+                      </td>
+                      <td className="p-4 text-slate-400 max-w-xs truncate">
+                        {c.title}
+                      </td>
+                      <td className="p-4">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            c.isActive
+                              ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/40'
+                              : 'bg-red-950 text-red-400 border border-red-500/40'
+                          }`}
+                        >
+                          {c.isActive ? 'ACTIVE' : 'INACTIVE'}
+                        </span>
+                      </td>
+                      <td className="p-4 text-right">
+                        <button
+                          onClick={() => handleToggleCoupon(c.id, c.isActive)}
+                          className="px-2.5 py-1 rounded bg-mandi-surface hover:bg-mandi-elevated text-slate-300 border border-mandi-border text-[11px] font-semibold"
+                        >
+                          {c.isActive ? 'Deactivate' : 'Activate'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. REVIEWS TAB */}
+      {activeTab === 'reviews' && (
+        <div className="space-y-6">
+          <div>
+            <h3 className="font-heading font-bold text-lg text-white">
+              Customer Experience & Ratings ({reviews.length})
+            </h3>
+            <p className="text-xs text-slate-400">
+              Verified reviews submitted by diners after order delivery.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {reviews.map((rev) => (
+              <div key={rev.id} className="bg-mandi-card border border-mandi-border rounded-2xl p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-bold text-white text-sm block">
+                      {rev.user?.name || 'Customer'}
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                      Order: {rev.order?.orderNumber} • ₹{rev.order?.totalAmount}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-gold-400 font-bold text-xs bg-gold-500/10 px-2 py-1 rounded-lg border border-gold-500/30">
+                    <Star className="w-3.5 h-3.5 fill-gold-400" />
+                    <span>{rev.rating} / 5</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-300 bg-mandi-surface/60 p-3 rounded-xl border border-mandi-border/60">
+                  "{rev.comment}"
+                </p>
+
+                <div className="flex items-center justify-between pt-1 text-xs">
+                  <span
+                    className={`text-[10px] font-bold ${
+                      rev.isApproved ? 'text-emerald-400' : 'text-slate-500'
+                    }`}
+                  >
+                    {rev.isApproved ? '● Visible on Website' : '● Hidden'}
+                  </span>
+                  <button
+                    onClick={() => handleToggleReview(rev.id, rev.isApproved)}
+                    className="px-2.5 py-1 rounded-lg bg-mandi-surface hover:bg-mandi-elevated text-slate-300 text-[11px] font-semibold border border-mandi-border"
+                  >
+                    {rev.isApproved ? 'Hide Review' : 'Approve Review'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 7. SUPPORT TICKETS TAB */}
+      {activeTab === 'support' && (
+        <div className="space-y-6">
+          <div>
+            <h3 className="font-heading font-bold text-lg text-white">
+              Customer Support Center ({supportTickets.length})
+            </h3>
+            <p className="text-xs text-slate-400">
+              Customer inquiries, complaints, and resolution center.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {supportTickets.map((tkt) => (
+              <div
+                key={tkt.id}
+                className={`bg-mandi-card border rounded-2xl p-5 space-y-3 transition-colors ${
+                  tkt.status === 'OPEN' ? 'border-amber-500/50' : 'border-mandi-border'
+                }`}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <span className="font-mono text-xs font-bold text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded border border-gold-500/30 mr-2">
+                      {tkt.ticketId}
+                    </span>
+                    <span className="font-bold text-white text-sm">
+                      {tkt.subject}
+                    </span>
+                  </div>
+
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      tkt.status === 'OPEN'
+                        ? 'bg-amber-950 text-amber-300 border border-amber-500/40 animate-pulse'
+                        : 'bg-emerald-950 text-emerald-400 border border-emerald-500/40'
+                    }`}
+                  >
+                    {tkt.status}
+                  </span>
+                </div>
+
+                <div className="text-xs text-slate-400">
+                  Customer: <strong className="text-white">{tkt.customer?.name}</strong> •{' '}
+                  <a href={`tel:${tkt.customer?.phone}`} className="text-blue-400 hover:underline">
+                    {tkt.customer?.phone}
+                  </a>
+                  {tkt.order?.orderNumber && (
+                    <span> • Order #{tkt.order.orderNumber}</span>
+                  )}
+                </div>
+
+                <p className="text-xs text-slate-200 bg-mandi-surface p-3 rounded-xl border border-mandi-border">
+                  {tkt.message}
+                </p>
+
+                {tkt.adminNotes && (
+                  <p className="text-[11px] text-emerald-300 bg-emerald-950/40 p-2.5 rounded-lg border border-emerald-500/30">
+                    Resolution note: {tkt.adminNotes}
+                  </p>
+                )}
+
+                <div className="flex items-center justify-between pt-2">
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`https://wa.me/91${tkt.customer?.phone?.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${tkt.customer?.name}, this is Arabian Mandi support regarding ticket ${tkt.ticketId}.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-emerald-950 border border-emerald-500/40 text-emerald-400 text-xs font-bold flex items-center gap-1.5"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" /> WhatsApp Customer
+                    </a>
+                  </div>
+
+                  {tkt.status === 'OPEN' && (
+                    <button
+                      onClick={() => handleResolveTicket(tkt.id)}
+                      className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md"
+                    >
+                      Mark as Resolved
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Add Coupon Modal */}
+      {showAddCouponModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <form
+            onSubmit={handleCreateCoupon}
+            className="bg-mandi-card border border-mandi-border rounded-2xl p-6 w-full max-w-md space-y-4"
+          >
+            <h3 className="font-heading font-bold text-lg text-white">
+              Create New Promo Coupon
+            </h3>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="text-slate-300 block mb-1">Coupon Code (UPPERCASE) *</label>
+                <input
+                  type="text"
+                  required
+                  value={newCoupon.code}
+                  onChange={(e) => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })}
+                  placeholder="e.g. FESTIVE20"
+                  className="w-full px-3 py-2 rounded-xl bg-mandi-surface border border-mandi-border text-white font-mono uppercase"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 block mb-1">Offer Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={newCoupon.title}
+                  onChange={(e) => setNewCoupon({ ...newCoupon, title: e.target.value })}
+                  placeholder="e.g. 20% Discount Special"
+                  className="w-full px-3 py-2 rounded-xl bg-mandi-surface border border-mandi-border text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-slate-300 block mb-1">Type *</label>
+                  <select
+                    value={newCoupon.discountType}
+                    onChange={(e) => setNewCoupon({ ...newCoupon, discountType: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-mandi-surface border border-mandi-border text-white"
+                  >
+                    <option value="FLAT">Flat ₹ OFF</option>
+                    <option value="PERCENTAGE">% Percentage</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-slate-300 block mb-1">Discount Value *</label>
+                  <input
+                    type="number"
+                    required
+                    value={newCoupon.discountValue}
+                    onChange={(e) => setNewCoupon({ ...newCoupon, discountValue: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-xl bg-mandi-surface border border-mandi-border text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-slate-300 block mb-1">Min Order Amount (₹)</label>
+                <input
+                  type="number"
+                  value={newCoupon.minOrderAmount}
+                  onChange={(e) => setNewCoupon({ ...newCoupon, minOrderAmount: Number(e.target.value) })}
+                  className="w-full px-3 py-2 rounded-xl bg-mandi-surface border border-mandi-border text-white"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-3 border-t border-mandi-border">
+              <button
+                type="button"
+                onClick={() => setShowAddCouponModal(false)}
+                className="flex-1 py-2 rounded-xl bg-mandi-surface text-slate-300 text-xs font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 py-2 rounded-xl bg-gold-gradient text-black font-bold text-xs"
+              >
+                Create Coupon
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
       {/* Rider Assignment Modal */}

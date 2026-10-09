@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
-import { Inter, Outfit } from 'next/font/google';
+import { Inter, Cinzel, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import Navbar from '@/components/Navbar';
 import BottomNav from '@/components/BottomNav';
 import Footer from '@/components/Footer';
+import FireIntroWrapper from '@/components/FireIntroWrapper';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -13,16 +14,22 @@ const inter = Inter({
   display: 'swap',
 });
 
-const outfit = Outfit({
+const cinzel = Cinzel({
   subsets: ['latin'],
-  variable: '--font-outfit',
+  variable: '--font-cinzel',
+  display: 'swap',
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'Arabian Mandi | Authentic Arabian Food & Mandi Delivery in Thagarapuvalasa',
+  title: 'Arabian Mandi | Authentic Arabian Food & Royal Mandi in Thagarapuvalasa',
   description:
-    'Order authentic Arabian Mandi, Faham Chicken, Juicy Mutton Mandi, Shish Taouk, and Kunafa delivered piping hot across Thagarapuvalasa, Sangivalasa & Chittivalasa. Real-time GPS tracking & online payment.',
+    'Savor authentic Arabian Mandi, Faham Charcoal Chicken, Juicy Mutton Ribs, Shish Taouk, and artisanal Kunafa delivered piping hot across Thagarapuvalasa, Sangivalasa & Chittivalasa. Real-time GPS tracking & online payment.',
   keywords: [
     'Arabian Mandi Thagarapuvalasa',
     'Mandi near Thagarapuvalasa',
@@ -33,12 +40,12 @@ export const metadata: Metadata = {
     'Sangivalasa Mandi delivery',
     'Bheemili Mandi delivery',
   ],
-  authors: [{ name: 'Arabian Mandi Restaurant' }],
+  authors: [{ name: 'S & H Arabian Mandi Restaurant' }],
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   openGraph: {
-    title: 'Arabian Mandi | Authentic Arabian Mandi in Thagarapuvalasa',
+    title: 'S & H Arabian Mandi | Authentic Royal Yemeni Gastronomy in Thagarapuvalasa',
     description:
-      'Smoked fragrant basmati rice, tender roasted meats, garlic toum & fiery shatta delivered across Thagarapuvalasa.',
+      'Smoked fragrant basmati rice, underground charcoal dum roasted meats, signature garlic toum & royal kunafa delivered across Thagarapuvalasa.',
     images: [
       {
         url: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=1200&auto=format&fit=crop',
@@ -65,7 +72,7 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Restaurant',
-    name: 'Arabian Mandi',
+    name: 'S & H Arabian Mandi',
     image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=1200&auto=format&fit=crop',
     address: {
       '@type': 'PostalAddress',
@@ -81,7 +88,7 @@ export default function RootLayout({
       longitude: 83.435,
     },
     telephone: '+91 89192 34567',
-    servesCuisine: ['Arabian', 'Middle Eastern', 'Mandi', 'Biryani'],
+    servesCuisine: ['Arabian', 'Middle Eastern', 'Mandi', 'Biryani', 'Tandoor'],
     priceRange: '₹₹',
     openingHoursSpecification: [
       {
@@ -102,7 +109,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+    <html lang="en" className={`${inter.variable} ${cinzel.variable} ${playfair.variable} dark`}>
       <head>
         <link
           rel="stylesheet"
@@ -115,7 +122,8 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="min-h-screen bg-mandi-bg text-slate-100 flex flex-col font-sans antialiased selection:bg-gold-500 selection:text-black">
+      <body className="min-h-screen bg-[#09090b] text-[#f4f4f5] flex flex-col font-sans antialiased selection:bg-[#d4af37] selection:text-black">
+        <FireIntroWrapper />
         <AuthProvider>
           <CartProvider>
             <Navbar />

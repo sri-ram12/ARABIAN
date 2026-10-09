@@ -1,140 +1,219 @@
 import React from 'react';
 import NextLink from 'next/link';
-import { MapPin, Phone, Mail, Clock, ShieldCheck, Heart, MessageCircle } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, MessageCircle, Globe, ChevronDown, Instagram, Facebook, Crown, Award } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-mandi-card border-t border-mandi-border text-slate-400 text-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-          {/* Brand & Story */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold-400 to-gold-700 p-0.5 shadow-gold-sm">
-                <div className="w-full h-full bg-mandi-card rounded-[10px] flex items-center justify-center text-gold-400 font-heading font-black text-xl">
-                  AM
-                </div>
-              </div>
-              <span className="font-heading text-xl font-bold text-white tracking-tight">
-                ARABIAN MANDI
+    <footer className="bg-[#0b0b0e] border-t border-[#272730] text-[#a1a1aa] text-sm mt-16 arabian-pattern">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16">
+        {/* Top Header with Brand and Region Switchers */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-8 border-b border-[#272730] gap-4">
+          <div className="flex items-center gap-3">
+            <div className="gold-seal-badge">
+              <span>S&H</span>
+            </div>
+            <div>
+              <span className="font-cinzel text-xl sm:text-2xl font-bold text-[#fceda2] tracking-wider">
+                S & H <span className="gold-gradient-text">ARABIAN MANDI</span>
               </span>
-            </div>
-            <p className="text-xs leading-relaxed text-slate-300">
-              The premier destination for authentic Yemeni & Arabian Mandi in Thagarapuvalasa.
-              Smoked long-grain basmati, charcoal roasted faham chicken, tender juicy mutton,
-              signature toum, and artisanal royal kunafa delivered straight to your door.
-            </p>
-            <div className="pt-2 flex items-center gap-3">
-              <a
-                href="https://wa.me/918919234567?text=Hello%20Arabian%20Mandi%20Thagarapuvalasa"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold hover:bg-emerald-600/30 transition-colors"
-              >
-                <MessageCircle className="w-4 h-4" /> WhatsApp Support
-              </a>
+              <p className="text-xs text-[#d4af37] font-cinzel uppercase tracking-widest mt-0.5">
+                Authentic Yemeni Mandi & Pit Coal Grills • Thagarapuvalasa
+              </p>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-heading font-bold text-white text-base mb-4 tracking-wide uppercase text-xs text-gold-400">
-              Explore Menu
-            </h4>
-            <ul className="space-y-2.5 text-xs">
-              <li>
-                <NextLink href="/menu?category=arabian-mandi" className="hover:text-gold-400 transition-colors">
-                  Signature Arabian Mandi
-                </NextLink>
-              </li>
-              <li>
-                <NextLink href="/menu?category=chicken-starters" className="hover:text-gold-400 transition-colors">
-                  Faham & Shish Taouk Kebabs
-                </NextLink>
-              </li>
-              <li>
-                <NextLink href="/menu?category=mutton-delicacies" className="hover:text-gold-400 transition-colors">
-                  Juicy Mutton Ribs & Ghee Roast
-                </NextLink>
-              </li>
-              <li>
-                <NextLink href="/menu?category=combos-feasts" className="hover:text-gold-400 transition-colors">
-                  Sultan Family Feasting Platters
-                </NextLink>
-              </li>
-              <li>
-                <NextLink href="/menu?category=desserts" className="hover:text-gold-400 transition-colors">
-                  Hot Melted Cheese Kunafa
-                </NextLink>
-              </li>
-              <li>
-                <NextLink href="/offers" className="hover:text-gold-400 transition-colors">
-                  Active Coupons & Discount Offers
-                </NextLink>
-              </li>
-            </ul>
-          </div>
-
-          {/* Service Areas */}
-          <div>
-            <h4 className="font-heading font-bold text-white text-base mb-4 tracking-wide uppercase text-xs text-gold-400">
-              Delivery Coverage (15 KM)
-            </h4>
-            <ul className="space-y-2 text-xs">
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-gold-400"></span>
-                <span>Thagarapuvalasa Town & RTC Complex</span>
-              </li>
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-gold-400"></span>
-                <span>Sangivalasa & NRI Hospital Campus</span>
-              </li>
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-gold-400"></span>
-                <span>Chittivalasa & Jute Mill Colony</span>
-              </li>
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-gold-400"></span>
-                <span>Anandapuram NH16 Junction</span>
-              </li>
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-gold-400"></span>
-                <span>Bheemunipatnam (Bheemili Beach Road)</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact & Hours */}
-          <div className="space-y-3">
-            <h4 className="font-heading font-bold text-white text-base mb-4 tracking-wide uppercase text-xs text-gold-400">
-              Restaurant Location
-            </h4>
-            <div className="flex items-start gap-2.5 text-xs">
-              <MapPin className="w-4 h-4 text-gold-400 flex-shrink-0 mt-0.5" />
-              <span>NH16 National Highway, Opposite Sangivalasa Bus Stop, Thagarapuvalasa, Andhra Pradesh 531162</span>
+          <div className="flex items-center gap-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#272730] bg-[#141419] text-xs font-cinzel text-[#d4d4d8]">
+              <span>🇮🇳 India</span>
+              <ChevronDown className="w-3.5 h-3.5 text-[#a1a1aa]" />
             </div>
-            <div className="flex items-center gap-2.5 text-xs">
-              <Phone className="w-4 h-4 text-gold-400 flex-shrink-0" />
-              <span>+91 89192 34567</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-xs">
-              <Mail className="w-4 h-4 text-gold-400 flex-shrink-0" />
-              <span>orders@arabianmandi.in</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-xs text-slate-300">
-              <Clock className="w-4 h-4 text-gold-400 flex-shrink-0" />
-              <span>11:00 AM – 11:30 PM (Daily)</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#272730] bg-[#141419] text-xs font-cinzel text-[#d4d4d8]">
+              <Globe className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span>English</span>
+              <ChevronDown className="w-3.5 h-3.5 text-[#a1a1aa]" />
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-12 pt-6 border-t border-mandi-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-          <p>© {new Date().getFullYear()} Arabian Mandi Restaurant, Thagarapuvalasa. All rights reserved.</p>
-          <div className="flex items-center gap-4 text-slate-400">
-            <NextLink href="/about" className="hover:text-gold-400">Our Story</NextLink>
-            <NextLink href="/contact" className="hover:text-gold-400">Contact & Support</NextLink>
-            <NextLink href="/track" className="hover:text-gold-400">Live GPS Tracking</NextLink>
+        {/* Links Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-8 py-10">
+          {/* Col 1: About */}
+          <div className="space-y-3">
+            <h4 className="font-cinzel font-bold text-[#fceda2] text-xs uppercase tracking-wider">
+              Our Heritage
+            </h4>
+            <ul className="space-y-2.5 text-xs text-[#d4d4d8]">
+              <li>
+                <NextLink href="/about" className="hover:text-[#fceda2] transition-colors">
+                  Ancestral Yemeni Roots
+                </NextLink>
+              </li>
+              <li>
+                <NextLink href="/menu" className="hover:text-[#fceda2] transition-colors">
+                  Underground Pit Dum Process
+                </NextLink>
+              </li>
+              <li>
+                <NextLink href="/contact" className="hover:text-[#fceda2] transition-colors">
+                  Contact & Table Bookings
+                </NextLink>
+              </li>
+              <li>
+                <NextLink href="/offers" className="hover:text-[#fceda2] transition-colors">
+                  Royal Discounts & Vouchers
+                </NextLink>
+              </li>
+              <li>
+                <NextLink href="/track" className="hover:text-[#fceda2] transition-colors">
+                  Live GPS Order Tracker
+                </NextLink>
+              </li>
+            </ul>
+          </div>
+
+          {/* Col 2: Mandiverse */}
+          <div className="space-y-3">
+            <h4 className="font-cinzel font-bold text-[#fceda2] text-xs uppercase tracking-wider">
+              Signature Dishes
+            </h4>
+            <ul className="space-y-2.5 text-xs text-[#d4d4d8]">
+              <li>
+                <NextLink href="/menu?category=arabian-mandi" className="hover:text-[#fceda2] transition-colors">
+                  Faham Smoked Chicken Mandi
+                </NextLink>
+              </li>
+              <li>
+                <NextLink href="/menu?category=arabian-mandi" className="hover:text-[#fceda2] transition-colors">
+                  Juicy Mutton Ribs Mandi
+                </NextLink>
+              </li>
+              <li>
+                <NextLink href="/menu?category=chicken-starters" className="hover:text-[#fceda2] transition-colors">
+                  Shish Taouk & Charcoal Grills
+                </NextLink>
+              </li>
+              <li>
+                <NextLink href="/menu?category=combos-feasts" className="hover:text-[#fceda2] transition-colors">
+                  Sultan Communal Feasts
+                </NextLink>
+              </li>
+              <li>
+                <NextLink href="/menu?category=desserts" className="hover:text-[#fceda2] transition-colors">
+                  Royal Melted Cheese Kunafa
+                </NextLink>
+              </li>
+            </ul>
+          </div>
+
+          {/* Col 3: Delivery Areas */}
+          <div className="space-y-3">
+            <h4 className="font-cinzel font-bold text-[#fceda2] text-xs uppercase tracking-wider">
+              Serving Locations (15 KM)
+            </h4>
+            <ul className="space-y-2 text-xs text-[#d4d4d8]">
+              <li className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+                <span>Thagarapuvalasa Town & RTC</span>
+              </li>
+              <li className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+                <span>Sangivalasa & NRI Hospital</span>
+              </li>
+              <li className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+                <span>Chittivalasa Jute Mill Colony</span>
+              </li>
+              <li className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+                <span>Anandapuram Highway Junction</span>
+              </li>
+              <li className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+                <span>Bheemili Beach Road (15 KM)</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Col 4: Learn More */}
+          <div className="space-y-3">
+            <h4 className="font-cinzel font-bold text-[#fceda2] text-xs uppercase tracking-wider">
+              Standards & Policies
+            </h4>
+            <ul className="space-y-2.5 text-xs text-[#d4d4d8]">
+              <li>
+                <NextLink href="/privacy" className="hover:text-[#fceda2] transition-colors">
+                  Privacy Policy
+                </NextLink>
+              </li>
+              <li>
+                <NextLink href="/security" className="hover:text-[#fceda2] transition-colors">
+                  FSSAI Hygiene Standards
+                </NextLink>
+              </li>
+              <li>
+                <NextLink href="/terms" className="hover:text-[#fceda2] transition-colors">
+                  Terms & Conditions
+                </NextLink>
+              </li>
+              <li>
+                <NextLink href="/refunds" className="hover:text-[#fceda2] transition-colors">
+                  Order Refund & Cancellation
+                </NextLink>
+              </li>
+            </ul>
+          </div>
+
+          {/* Col 5: Social & Contact */}
+          <div className="space-y-3">
+            <h4 className="font-cinzel font-bold text-[#fceda2] text-xs uppercase tracking-wider">
+              Reservations & Support
+            </h4>
+            <div className="flex items-center gap-2">
+              <a
+                href="https://wa.me/918919234567?text=Hello%20Arabian%20Mandi%20Thagarapuvalasa"
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center hover:opacity-90 transition-opacity"
+                title="Order on WhatsApp"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </a>
+              <div className="w-8 h-8 rounded-full bg-[#18181f] border border-[#272730] text-[#d4af37] flex items-center justify-center hover:border-[#d4af37] transition-colors cursor-pointer">
+                <Instagram className="w-4 h-4" />
+              </div>
+              <div className="w-8 h-8 rounded-full bg-[#18181f] border border-[#272730] text-[#d4af37] flex items-center justify-center hover:border-[#d4af37] transition-colors cursor-pointer">
+                <Facebook className="w-4 h-4" />
+              </div>
+            </div>
+
+            <div className="pt-2 text-xs space-y-1.5 text-[#d4d4d8]">
+              <div className="flex items-start gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-[#d4af37] flex-shrink-0 mt-0.5" />
+                <span>Opp. Sangivalasa Bus Stop, NH16, Thagarapuvalasa</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-[#d4af37] flex-shrink-0" />
+                <span className="font-mono font-bold text-[#fceda2]">+91 89192 34567</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-[#d4af37] flex-shrink-0" />
+                <span>11:00 AM – 11:30 PM (Daily)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Disclaimer */}
+        <div className="mt-8 pt-8 border-t border-[#272730] text-xs text-[#a1a1aa] space-y-3 font-sans">
+          <p className="leading-relaxed font-light">
+            S & H Arabian Mandi™ is dedicated to authentic Yemeni culinary excellence. All meats are 100% Halal certified and pit-roasted over acacia charcoal. FSSAI Lic. No: 20124020000124.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[#a1a1aa]">
+            <p className="font-cinzel text-[11px]">2024–{new Date().getFullYear()} © S&H Arabian Mandi™ Ltd. All rights reserved.</p>
+            <div className="flex items-center gap-2 text-[11px] font-semibold text-[#fceda2] font-cinzel">
+              <Award className="w-4 h-4 text-[#d4af37]" />
+              <span>Thagarapuvalasa’s Highest Rated Arabian Restaurant (4.8 ★)</span>
+            </div>
           </div>
         </div>
       </div>

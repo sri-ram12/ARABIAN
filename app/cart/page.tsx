@@ -10,11 +10,12 @@ import {
   Minus,
   ArrowRight,
   Tag,
-  Percent,
   MapPin,
-  CheckCircle,
-  AlertCircle,
   X,
+  Clock,
+  ShieldCheck,
+  ChevronRight,
+  Crown,
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import LocationModal from '@/components/LocationModal';
@@ -44,6 +45,7 @@ export default function CartPage() {
   const [couponSuccess, setCouponSuccess] = useState<string | null>(null);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [locationModalOpen, setLocationModalOpen] = useState(false);
+  const [cookingNote, setCookingNote] = useState('');
 
   const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,174 +68,223 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-20 text-center space-y-6">
-        <div className="w-20 h-20 rounded-full bg-mandi-card border border-mandi-border flex items-center justify-center mx-auto text-gold-400">
-          <ShoppingBag className="w-10 h-10" />
+      <div className="max-w-2xl mx-auto px-4 py-24 text-center space-y-6">
+        <div className="w-24 h-24 rounded-full bg-[#18181f] border border-[#d4af37]/30 flex items-center justify-center mx-auto text-[#d4af37]">
+          <ShoppingBag className="w-12 h-12" />
         </div>
-        <h1 className="font-heading text-3xl font-black text-white">Your Cart is Empty</h1>
-        <p className="text-sm text-slate-400 max-w-sm mx-auto">
-          You haven&apos;t added any delicious Arabian Mandi platters or grills to your order yet.
-        </p>
+        <div>
+          <h1 className="font-cinzel text-2xl sm:text-3xl font-bold text-[#fceda2]">Your Feast Cart is Empty</h1>
+          <p className="text-sm text-[#a1a1aa] max-w-sm mx-auto mt-2 font-sans font-light">
+            Indulge in authentic pit-smoked Arabian Mandi, crispy Faham grills, and melted cheese kunafa.
+          </p>
+        </div>
         <NextLink
           href="/menu"
-          className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gold-gradient text-black font-heading font-black text-sm tracking-wide shadow-gold-sm hover:brightness-110 transition-all"
+          className="btn-royal-gold inline-flex items-center gap-2 px-8 py-3.5 text-xs sm:text-sm tracking-wide shadow-gold-sm"
         >
-          <span>EXPLORE OUR MENU</span>
-          <ArrowRight className="w-4 h-4 stroke-[3]" />
+          <span>EXPLORE ROYAL MENU</span>
+          <ArrowRight className="w-4 h-4 stroke-[2.5]" />
         </NextLink>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="flex items-center justify-between border-b border-mandi-border pb-6 mb-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 text-[#f4f4f5]">
+      {/* Breadcrumb & Title */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-[#272730] gap-4 mb-6">
         <div>
-          <h1 className="font-heading text-3xl font-black text-white">Your Order Cart</h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Review your dishes, portion sizes, and delivery destination in Thagarapuvalasa
+          <div className="flex items-center gap-2 text-xs text-[#a1a1aa] mb-1 font-cinzel">
+            <NextLink href="/" className="hover:text-[#fceda2]">Home</NextLink>
+            <span>/</span>
+            <NextLink href="/menu" className="hover:text-[#fceda2]">S & H Mandi</NextLink>
+            <span>/</span>
+            <span className="text-[#fceda2] font-semibold">Feast Cart</span>
+          </div>
+          <h1 className="font-cinzel text-2xl sm:text-3xl font-bold text-[#fceda2]">Order Summary</h1>
+          <p className="text-xs text-[#a1a1aa] mt-0.5">
+            S & H Arabian Mandi • Sangivalasa, Thagarapuvalasa
           </p>
         </div>
         <button
           onClick={clearCart}
-          className="text-xs text-red-400 hover:text-red-300 font-semibold flex items-center gap-1"
+          className="text-xs text-red-400 hover:text-red-300 font-semibold flex items-center gap-1.5 self-start sm:self-auto px-3 py-1.5 rounded-lg border border-red-500/30 hover:bg-red-500/10 transition-colors"
         >
-          <Trash2 className="w-3.5 h-3.5" /> Clear Cart
+          <Trash2 className="w-3.5 h-3.5" /> Empty Cart
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Cart Items List */}
+        {/* Left Column: Cart Items & Delivery Details */}
         <div className="lg:col-span-7 space-y-4">
-          {items.map((item, index) => {
-            const addonsSum = (item.selectedAddons || []).reduce((s, a) => s + a.price, 0);
-            const itemUnitTotal = item.price + addonsSum;
-
-            return (
-              <div
-                key={`${item.menuItemId}-${index}`}
-                className="bg-mandi-card border border-mandi-border rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all hover:border-slate-600"
-              >
-                <div className="flex items-center gap-4 flex-1">
-                  {item.image && (
-                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 border border-mandi-border">
-                      <Image src={item.image} alt={item.name} fill className="object-cover" />
-                    </div>
-                  )}
-
-                  <div className="flex-1">
-                    <h3 className="font-heading font-bold text-sm sm:text-base text-white">
-                      {item.name}
-                    </h3>
-                    {item.size && (
-                      <span className="inline-block mt-0.5 text-xs text-gold-400 font-medium">
-                        Size: {item.size}
-                      </span>
-                    )}
-
-                    {/* Addons preview */}
-                    {item.selectedAddons && item.selectedAddons.length > 0 && (
-                      <div className="text-[11px] text-slate-400 mt-1 flex flex-wrap gap-1">
-                        {item.selectedAddons.map((a, i) => (
-                          <span
-                            key={i}
-                            className="bg-mandi-surface px-1.5 py-0.5 rounded border border-mandi-border"
-                          >
-                            + {a.name} (₹{a.price})
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="font-heading font-black text-sm text-gold-400 mt-1.5">
-                      ₹{itemUnitTotal} × {item.quantity} = ₹{itemUnitTotal * item.quantity}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quantity Controls & Remove */}
-                <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-mandi-border/60">
-                  <div className="flex items-center gap-1.5 bg-mandi-surface border border-mandi-border rounded-xl p-1">
-                    <button
-                      onClick={() => updateQuantity(index, item.quantity - 1)}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-white hover:bg-mandi-card"
-                    >
-                      <Minus className="w-3.5 h-3.5" />
-                    </button>
-                    <span className="w-6 text-center font-bold text-xs text-white">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => updateQuantity(index, item.quantity + 1)}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-white hover:bg-mandi-card"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={() => removeFromCart(index)}
-                    className="p-2 rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+          {/* Restaurant Card Header */}
+          <div className="slate-plate-card rounded-2xl p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="gold-seal-badge">
+                <span>S&H</span>
               </div>
-            );
-          })}
+              <div>
+                <h3 className="font-cinzel font-bold text-sm text-[#fceda2]">S & H Arabian Mandi</h3>
+                <p className="text-xs text-[#a1a1aa] flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-[#d4af37]" /> Delivery in 30-40 mins
+                </p>
+              </div>
+            </div>
+            <NextLink
+              href="/menu"
+              className="text-xs font-cinzel text-[#d4af37] hover:underline"
+            >
+              + Add More Items
+            </NextLink>
+          </div>
 
-          {/* Delivery Destination Card */}
-          <div className="bg-mandi-card border border-mandi-border rounded-2xl p-5 space-y-3">
+          {/* Cart Items List */}
+          <div className="slate-plate-card rounded-2xl divide-y divide-[#272730] overflow-hidden">
+            {items.map((item, index) => {
+              const addonsSum = (item.selectedAddons || []).reduce((s, a) => s + a.price, 0);
+              const itemUnitTotal = item.price + addonsSum;
+
+              return (
+                <div
+                  key={`${item.menuItemId}-${index}`}
+                  className="p-4 sm:p-5 flex items-start justify-between gap-4 hover:bg-[#18181f]/40 transition-colors"
+                >
+                  <div className="flex items-start gap-3.5 flex-1">
+                    <div className="mt-1 flex-shrink-0">
+                      <div className="zomato-nonveg-mark" />
+                    </div>
+
+                    <div className="flex-1">
+                      <h4 className="font-cinzel font-bold text-sm sm:text-base text-[#fceda2] leading-snug">
+                        {item.name}
+                      </h4>
+                      {item.size && (
+                        <span className="inline-block mt-1 text-[11px] font-mono px-2 py-0.5 rounded bg-[#18181f] text-[#d4af37] border border-[#272730]">
+                          Portion: {item.size}
+                        </span>
+                      )}
+
+                      {/* Addons */}
+                      {item.selectedAddons && item.selectedAddons.length > 0 && (
+                        <div className="text-[11px] text-[#a1a1aa] mt-1 flex flex-wrap gap-1">
+                          {item.selectedAddons.map((a, i) => (
+                            <span key={i} className="bg-[#18181f] px-1.5 py-0.5 rounded text-[#d4d4d8] border border-[#272730]">
+                              + {a.name} (₹{a.price})
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="font-mono font-bold text-sm text-white mt-2">
+                        ₹{itemUnitTotal * item.quantity}
+                        {item.quantity > 1 && (
+                          <span className="text-xs font-normal text-[#a1a1aa] ml-1.5">
+                            (₹{itemUnitTotal} × {item.quantity})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quantity Stepper */}
+                  <div className="flex items-center gap-3">
+                    <div className="inline-flex items-center bg-[#18181f] border border-[#272730] rounded-xl overflow-hidden">
+                      <button
+                        onClick={() => updateQuantity(index, item.quantity - 1)}
+                        className="px-2.5 py-1.5 hover:bg-[#22222a] text-[#d4af37] transition-colors"
+                      >
+                        <Minus className="w-3 h-3 stroke-[2.5]" />
+                      </button>
+                      <span className="px-2 text-xs font-mono font-bold text-[#fceda2] select-none min-w-[20px] text-center">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateQuantity(index, item.quantity + 1)}
+                        className="px-2.5 py-1.5 hover:bg-[#22222a] text-[#d4af37] transition-colors"
+                      >
+                        <Plus className="w-3 h-3 stroke-[2.5]" />
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={() => removeFromCart(index)}
+                      className="text-neutral-500 hover:text-red-400 p-1 transition-colors"
+                      title="Remove item"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Cooking Instructions Input */}
+          <div className="slate-plate-card rounded-2xl p-4">
+            <label className="text-xs font-cinzel font-bold text-[#fceda2] block mb-1.5 uppercase tracking-wider">
+              Cooking or Delivery Notes (Optional)
+            </label>
+            <input
+              type="text"
+              value={cookingNote}
+              onChange={(e) => setCookingNote(e.target.value)}
+              placeholder="e.g. Extra spicy shatta, separate toum dip, call before arrival..."
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#141419] border border-[#272730] text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#d4af37]"
+            />
+          </div>
+
+          {/* Delivery Address Card */}
+          <div className="slate-plate-card rounded-2xl p-5 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="font-heading font-semibold text-sm text-white flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-gold-400" /> Delivery Area
+              <span className="font-cinzel font-bold text-sm text-[#fceda2] flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-[#d4af37]" /> Delivery Destination
               </span>
               <button
                 onClick={() => setLocationModalOpen(true)}
-                className="text-xs font-semibold text-gold-400 hover:underline"
+                className="text-xs font-cinzel text-[#d4af37] hover:underline"
               >
-                Change
+                CHANGE
               </button>
             </div>
 
-            <div className="p-3 rounded-xl bg-mandi-surface border border-mandi-border flex items-center justify-between">
+            <div className="p-3.5 rounded-xl bg-[#141419] border border-[#272730] flex items-center justify-between">
               <div>
-                <span className="text-xs font-semibold text-white block">
-                  {selectedAddress ? `${selectedAddress.area}, ${selectedAddress.city}` : 'Thagarapuvalasa Town (Default)'}
+                <span className="text-xs font-bold text-white block">
+                  {selectedAddress ? `${selectedAddress.area}, ${selectedAddress.city}` : 'Thagarapuvalasa Town & Sangivalasa'}
                 </span>
-                <span className="text-[11px] text-slate-400">
-                  {serviceabilityMessage || 'Estimated delivery in 35-45 minutes'}
+                <span className="text-[11px] text-[#a1a1aa] mt-0.5 block font-sans">
+                  {serviceabilityMessage || 'Estimated delivery: 30-40 minutes'}
                 </span>
               </div>
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-500/30">
-                Serviceable
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-500/30">
+                Serviceable (15 KM)
               </span>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Coupons & Bill Breakdown */}
-        <div className="lg:col-span-5 space-y-6">
-          {/* Apply Coupon Box */}
-          <div className="bg-mandi-card border border-mandi-border rounded-2xl p-5 space-y-3">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gold-400">
+        {/* Right Column: Coupons & Bill Details */}
+        <div className="lg:col-span-5 space-y-5">
+          {/* Coupon Code Section */}
+          <div className="slate-plate-card rounded-2xl p-5 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-cinzel font-bold uppercase tracking-wider text-[#d4af37]">
               <Tag className="w-4 h-4" />
-              <span>Have a Coupon or Promo Code?</span>
+              <span>Royal Offers & Coupons</span>
             </div>
 
             {appliedCoupon ? (
-              <div className="p-3 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-emerald-950/60 border border-emerald-500/40 flex items-center justify-between">
                 <div>
-                  <span className="font-mono font-bold text-xs text-gold-300">
+                  <span className="font-mono font-bold text-xs text-emerald-300">
                     {appliedCoupon.code} APPLIED
                   </span>
-                  <p className="text-[11px] text-slate-300">
-                    You saved ₹{appliedCoupon.calculatedDiscount}!
+                  <p className="text-[11px] text-emerald-200 mt-0.5">
+                    You saved ₹{appliedCoupon.calculatedDiscount} on this royal feast!
                   </p>
                 </div>
                 <button
                   onClick={removeCoupon}
-                  className="p-1 rounded-lg text-slate-400 hover:text-white"
+                  className="p-1 rounded-lg text-emerald-300 hover:bg-emerald-900 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -245,39 +296,38 @@ export default function CartPage() {
                   value={couponInput}
                   onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                   placeholder="Enter code (e.g. WELCOME50)"
-                  className="flex-1 px-3 py-2.5 rounded-xl bg-mandi-surface border border-mandi-border focus:border-gold-500 focus:outline-none text-xs text-white uppercase placeholder-slate-500"
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#141419] border border-[#272730] focus:border-[#d4af37] focus:outline-none text-xs text-white uppercase font-mono placeholder-neutral-500"
                 />
                 <button
                   type="submit"
                   disabled={isApplyingCoupon || !couponInput.trim()}
-                  className="px-4 py-2.5 rounded-xl bg-gold-gradient text-black font-heading font-bold text-xs tracking-wider shadow-gold-sm hover:brightness-110 disabled:opacity-50 transition-all"
+                  className="btn-royal-gold px-5 py-2.5 text-xs disabled:opacity-50"
                 >
                   {isApplyingCoupon ? '...' : 'APPLY'}
                 </button>
               </form>
             )}
 
-            {couponError && <p className="text-xs text-red-400">{couponError}</p>}
-            {couponSuccess && <p className="text-xs text-emerald-400">{couponSuccess}</p>}
+            {couponError && <p className="text-xs text-red-400 font-medium">{couponError}</p>}
+            {couponSuccess && <p className="text-xs text-emerald-400 font-medium">{couponSuccess}</p>}
 
-            {/* Quick Suggestions */}
             {!appliedCoupon && (
-              <div className="pt-2 flex flex-wrap gap-2 text-[10px]">
+              <div className="pt-1 flex flex-wrap gap-2 text-[10px]">
                 <button
                   onClick={() => setCouponInput('WELCOME50')}
-                  className="px-2 py-1 rounded bg-mandi-surface border border-mandi-border hover:border-gold-500 text-slate-300"
+                  className="px-2.5 py-1 rounded-lg border border-[#272730] hover:border-[#d4af37] text-[#d4d4d8] font-mono bg-[#141419]"
                 >
                   WELCOME50 (₹50 OFF)
                 </button>
                 <button
                   onClick={() => setCouponInput('MANDI100')}
-                  className="px-2 py-1 rounded bg-mandi-surface border border-mandi-border hover:border-gold-500 text-slate-300"
+                  className="px-2.5 py-1 rounded-lg border border-[#272730] hover:border-[#d4af37] text-[#d4d4d8] font-mono bg-[#141419]"
                 >
                   MANDI100 (₹100 OFF)
                 </button>
                 <button
                   onClick={() => setCouponInput('FREEDEL')}
-                  className="px-2 py-1 rounded bg-mandi-surface border border-mandi-border hover:border-gold-500 text-slate-300"
+                  className="px-2.5 py-1 rounded-lg border border-[#272730] hover:border-[#d4af37] text-[#d4d4d8] font-mono bg-[#141419]"
                 >
                   FREEDEL (Free Delivery)
                 </button>
@@ -285,16 +335,16 @@ export default function CartPage() {
             )}
           </div>
 
-          {/* Bill Summary */}
-          <div className="bg-mandi-card border border-mandi-border rounded-2xl p-6 space-y-4 shadow-xl">
-            <h3 className="font-heading font-bold text-base text-white border-b border-mandi-border pb-3">
+          {/* Bill Details */}
+          <div className="slate-plate-card rounded-2xl p-6 space-y-4">
+            <h3 className="font-cinzel font-bold text-base text-[#fceda2] border-b border-[#272730] pb-3">
               Bill Summary
             </h3>
 
-            <div className="space-y-2.5 text-xs text-slate-300">
+            <div className="space-y-2.5 text-xs text-[#d4d4d8]">
               <div className="flex justify-between">
                 <span>Item Subtotal</span>
-                <span className="font-semibold text-white">₹{subtotal}</span>
+                <span className="font-mono font-bold text-white">₹{subtotal}</span>
               </div>
 
               {discount > 0 && (
@@ -306,7 +356,7 @@ export default function CartPage() {
 
               <div className="flex justify-between">
                 <span>Delivery Fee (Thagarapuvalasa Area)</span>
-                <span className="font-semibold text-white">
+                <span className="font-mono font-bold text-white">
                   {deliveryFee === 0 ? (
                     <span className="text-emerald-400">FREE</span>
                   ) : (
@@ -317,32 +367,37 @@ export default function CartPage() {
 
               <div className="flex justify-between">
                 <span>Govt Taxes & GST (5%)</span>
-                <span className="font-semibold text-white">₹{tax}</span>
+                <span className="font-mono font-bold text-white">₹{tax}</span>
               </div>
 
               <div className="flex justify-between">
                 <span>Insulated Thermal Packaging Fee</span>
-                <span className="font-semibold text-white">₹{packagingFee}</span>
+                <span className="font-mono font-bold text-white">₹{packagingFee}</span>
               </div>
 
-              <div className="pt-3 border-t border-mandi-border flex justify-between items-baseline text-sm">
-                <span className="font-heading font-bold text-white text-base">To Pay</span>
-                <span className="font-heading font-black text-xl text-gold-400">
+              <div className="pt-3 border-t border-[#272730] flex justify-between items-baseline">
+                <div>
+                  <span className="font-cinzel font-bold text-base text-[#fceda2]">Grand Total</span>
+                  <p className="text-[10px] text-[#a1a1aa]">Inclusive of all taxes</p>
+                </div>
+                <span className="font-mono font-black text-2xl text-[#fceda2]">
                   ₹{grandTotal}
                 </span>
               </div>
             </div>
 
+            {/* Proceed CTA */}
             <NextLink
               href="/checkout"
-              className="block w-full py-3.5 rounded-xl bg-gold-gradient text-black font-heading font-bold text-sm tracking-wide text-center shadow-gold-sm hover:brightness-110 active:scale-98 transition-all"
+              className="btn-royal-gold block w-full py-3.5 text-xs sm:text-sm tracking-wider text-center shadow-gold-sm"
             >
-              PROCEED TO CHECKOUT
+              PROCEED TO SECURE CHECKOUT • ₹{grandTotal}
             </NextLink>
 
-            <p className="text-[11px] text-center text-slate-400">
-              Safe & secure checkout with Razorpay UPI, Cards & Cash on Delivery
-            </p>
+            <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#a1a1aa] pt-1">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>Safe & Secure UPI, Cards & Cash on Delivery</span>
+            </div>
           </div>
         </div>
       </div>

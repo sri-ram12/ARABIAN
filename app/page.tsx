@@ -14,19 +14,21 @@ import {
   ChevronRight,
   Plus,
   ShoppingBag,
-  Heart,
-  TrendingUp,
-  Percent,
+  Play,
+  Bike,
+  Crown,
+  Award,
+  Phone,
 } from 'lucide-react';
 import FoodModal from '@/components/FoodModal';
 import LocationModal from '@/components/LocationModal';
+import SizzlerReelCard from '@/components/SizzlerReelCard';
+import CulinaryShowcase from '@/components/CulinaryShowcase';
 import { useCart } from '@/context/CartContext';
 
 export default function HomePage() {
   const { selectedAddress, addToCart } = useCart();
-  const [categories, setCategories] = useState<any[]>([]);
   const [bestsellers, setBestsellers] = useState<any[]>([]);
-  const [reviews, setReviews] = useState<any[]>([]);
   const [selectedFood, setSelectedFood] = useState<any | null>(null);
   const [locationModalOpen, setLocationModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -34,20 +36,10 @@ export default function HomePage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [menuRes, reviewRes] = await Promise.all([
-          fetch('/api/menu?bestseller=true'),
-          fetch('/api/reviews'),
-        ]);
-
+        const menuRes = await fetch('/api/menu?bestseller=true');
         const menuData = await menuRes.json();
-        const reviewData = await reviewRes.json();
-
         if (menuData.success) {
-          setCategories(menuData.categories || []);
           setBestsellers(menuData.items || []);
-        }
-        if (reviewData.success) {
-          setReviews(reviewData.reviews || []);
         }
       } catch (e) {
         console.error('Home load error:', e);
@@ -55,130 +47,185 @@ export default function HomePage() {
         setLoading(false);
       }
     }
-
     loadData();
   }, []);
 
-  return (
-    <div className="space-y-16 lg:space-y-24">
-      {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden pt-8 pb-16 lg:py-24 arabian-pattern">
-        {/* Ambient Gold Glow Background */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-gold-500/10 via-amber-600/15 to-transparent rounded-full blur-3xl pointer-events-none -z-10" />
+  // Quick fallback dishes for the zig-zag showcase if API is loading
+  const signaturePlatters = [
+    {
+      id: 'faham-chicken-mandi',
+      name: 'Special Faham Chicken Mandi',
+      arabic: 'فحم دجاج مندي يمني',
+      badge: 'Chef Signature',
+      desc: 'Whole chicken marinated overnight in 14 secret Yemeni spices, slow-roasted over fragrant acacia charcoal. Served atop saffron-perfumed long-grain basmati, crowned with roasted cashews and crispy fried onions.',
+      price: 280,
+      sizes: [
+        { name: 'Solo (1P)', price: 280 },
+        { name: 'Duo (2P)', price: 540 },
+        { name: 'Trio (3P)', price: 800 },
+        { name: 'Squad (4P)', price: 1100 },
+      ],
+      image: 'https://images.unsplash.com/photo-1610057099431-d73a1c9d2f2f?q=80&w=800',
+    },
+    {
+      id: 'juicy-mutton-mandi',
+      name: 'Juicy Mutton Ribs Mandi',
+      arabic: 'لحم غنم مندي ملكي',
+      badge: 'Royal Favorite',
+      desc: 'Premium young spring goat ribs steamed to buttery tenderness inside the clay tandoor. The savory juices naturally baste the aromatic basmati rice below, creating an unforgettably rich culinary masterpiece.',
+      price: 360,
+      sizes: [
+        { name: 'Solo (1P)', price: 360 },
+        { name: 'Duo (2P)', price: 680 },
+        { name: 'Trio (3P)', price: 999 },
+        { name: 'Squad (4P)', price: 1350 },
+      ],
+      image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?q=80&w=800',
+    },
+    {
+      id: 'shish-taouk-skewer',
+      name: 'Shish Taouk & Faham Skewers',
+      arabic: 'شيش طاووق على الفحم',
+      badge: 'Charcoal Grilled',
+      desc: 'Tender boneless chicken morsels soaked in Greek yogurt, sumac, garlic, and wild Arabian herbs, flame-blistered on iron skewers over glowing coals. Served with authentic garlic toum and pickled chilies.',
+      price: 280,
+      sizes: [
+        { name: 'Standard Platter', price: 280 },
+        { name: 'Family Platter', price: 520 },
+      ],
+      image: 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?q=80&w=800',
+    },
+    {
+      id: 'royal-cheese-kunafa',
+      name: 'Royal Melted Cheese Kunafa',
+      arabic: 'كنافة بالجبن الملكية',
+      badge: 'Artisanal Dessert',
+      desc: 'Golden spun kataifi pastry crisp-fried in pure desi ghee, filled with a thick layer of stretchy sweet Akawi cheese, bathed in hot rose-cardamom syrup and dusted with vibrant pistachio nibs.',
+      price: 240,
+      sizes: [
+        { name: 'Solo Plate', price: 240 },
+        { name: 'Grand Share', price: 420 },
+      ],
+      image: 'https://images.unsplash.com/photo-1579954115545-a95591f28bfc?q=80&w=800',
+    },
+  ];
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Left Content */}
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              {/* Pill badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-300 text-xs font-semibold shadow-gold-sm">
-                <Flame className="w-4 h-4 text-gold-400 animate-pulse" />
-                <span>AUTHENTIC YEMENI CULINARY TRADITION</span>
+  return (
+    <div className="bg-[#09090b] text-[#f4f4f5] min-h-screen selection:bg-[#d4af37] selection:text-black">
+      {/* =========================================================================
+          1. HERO SECTION (Inspired by Image 1 & 2)
+          ========================================================================= */}
+      <section className="relative overflow-hidden pt-8 pb-16 lg:py-24 border-b border-[#272730]/60 arabian-pattern">
+        {/* Ambient Warm Embers Background Glow */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-[#d4af37]/10 via-[#ff7828]/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            {/* Left Column: Majestic Serif Typography */}
+            <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
+              {/* Eyebrow Label */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#18181f] border border-[#d4af37]/40 text-[#fceda2] text-xs font-cinzel tracking-widest uppercase">
+                <Crown className="w-3.5 h-3.5 text-[#d4af37]" />
+                <span>Yemeni Royal Gastronomy</span>
               </div>
 
               {/* Main Headline */}
-              <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.15]">
-                AUTHENTIC <span className="gold-gradient-text">ARABIAN MANDI</span>, DELIVERED TO YOUR DOOR
-              </h1>
+              <div className="space-y-1">
+                <p className="font-cinzel text-xs sm:text-sm tracking-[0.25em] text-[#a1a1aa] uppercase">
+                  AENA Y QY SOPRE
+                </p>
+                <h1 className="font-cinzel text-4xl sm:text-6xl font-bold tracking-tight text-[#fceda2] leading-[1.1]">
+                  S & H <span className="gold-gradient-text">Arabian Mandi</span>
+                </h1>
+              </div>
 
-              {/* Supporting Subtext */}
-              <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
-                Freshly prepared Arabian flavours delivered across{' '}
-                <strong className="text-gold-300 font-semibold">Thagarapuvalasa</strong>, Sangivalasa & Chittivalasa.
-                Smoked basmati rice, tender coal-fired meats, handcrafted toum & rich kunafa.
+              {/* Description */}
+              <p className="text-sm sm:text-base text-[#d4d4d8] leading-relaxed max-w-xl mx-auto lg:mx-0 font-sans font-light">
+                Experience the timeless majesty of authentic Yemeni & Dum Mandi in Thagarapuvalasa.
+                Long-grain basmati slowly smoked over sweet acacia charcoal, topped with fall-off-the-bone
+                juicy mutton ribs, crisp faham chicken, and royal artisanal kunafa.
               </p>
 
-              {/* Delivery Location Selector Card */}
-              <div className="bg-mandi-card/90 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-mandi-border shadow-xl max-w-xl mx-auto lg:mx-0">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <button
-                    onClick={() => setLocationModalOpen(true)}
-                    className="flex-1 flex items-center gap-3 p-3 rounded-xl bg-mandi-surface hover:bg-mandi-elevated border border-mandi-border text-left transition-colors"
-                  >
-                    <MapPin className="w-5 h-5 text-gold-400 flex-shrink-0" />
-                    <div className="overflow-hidden">
-                      <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">
-                        Delivery Destination
-                      </span>
-                      <span className="text-xs sm:text-sm font-semibold text-white truncate block">
-                        {selectedAddress ? `${selectedAddress.area}, ${selectedAddress.city}` : 'Select your area in Thagarapuvalasa'}
-                      </span>
-                    </div>
-                  </button>
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+                <NextLink
+                  href="/menu"
+                  className="btn-royal-gold w-full sm:w-auto px-8 py-3.5 text-xs sm:text-sm flex items-center justify-center gap-2 group"
+                >
+                  <span>ORDER ROYAL FEAST</span>
+                  <ArrowRight className="w-4 h-4 stroke-[2.5] group-hover:translate-x-1 transition-transform" />
+                </NextLink>
 
-                  <NextLink
-                    href="/menu"
-                    className="py-3 px-6 rounded-xl bg-gold-gradient text-black font-heading font-black text-sm tracking-wide shadow-gold-sm hover:brightness-110 active:scale-95 transition-all text-center flex items-center justify-center gap-2"
-                  >
-                    <span>ORDER NOW</span>
-                    <ArrowRight className="w-4 h-4 stroke-[3]" />
-                  </NextLink>
-                </div>
-                <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between px-1">
-                  <span>🚀 Average delivery: 30–40 mins</span>
-                  <span>✨ Min order ₹200</span>
-                </div>
+                <NextLink
+                  href="/menu?tab=board"
+                  className="btn-royal-outline w-full sm:w-auto px-7 py-3.5 text-xs sm:text-sm flex items-center justify-center gap-2"
+                >
+                  <span>VIEW SLATE MENU</span>
+                </NextLink>
               </div>
 
               {/* Trust Badges */}
-              <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-400">
+              <div className="pt-6 border-t border-[#272730] flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-[#a1a1aa]">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
-                  <span>100% Authentic Coal Smoked</span>
+                  <div className="w-7 h-7 rounded-full bg-[#d4af37]/15 flex items-center justify-center text-[#d4af37]">
+                    <Star className="w-3.5 h-3.5 fill-[#d4af37]" />
+                  </div>
+                  <div>
+                    <div className="font-cinzel font-bold text-white leading-none">4.8 / 5.0 RATED</div>
+                    <div className="text-[10px] text-neutral-400 mt-0.5">500+ Verified Diners</div>
+                  </div>
                 </div>
+
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-gold-400"></div>
-                  <span>Fresh Halal Ingredients</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                  <span>Live GPS Order Tracking</span>
+                  <div className="w-7 h-7 rounded-full bg-emerald-500/15 flex items-center justify-center text-emerald-400">
+                    <Bike className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <div className="font-cinzel font-bold text-white leading-none">15 KM DELIVERY</div>
+                    <div className="text-[10px] text-neutral-400 mt-0.5">Sangivalasa & Thagarapuvalasa</div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Hero Visual: Signature Faham Mandi Platter */}
-            <div className="lg:col-span-5 relative">
-              <div className="relative mx-auto max-w-md lg:max-w-none">
-                {/* Visual Frame */}
-                <div className="relative rounded-3xl overflow-hidden border-2 border-gold-500/30 shadow-2xl bg-mandi-card group">
-                  <div className="relative h-80 sm:h-96 w-full">
-                    <Image
-                      src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=900&auto=format&fit=crop"
-                      alt="Signature Faham Chicken Mandi Platter"
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-700"
-                      priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-mandi-card via-black/20 to-transparent" />
-                  </div>
+            {/* Right Column: Grand Circular Platter Presentation (Image 1 Style) */}
+            <div className="lg:col-span-6 flex justify-center relative">
+              {/* Decorative Circular Rim Frame */}
+              <div className="relative w-[320px] h-[320px] sm:w-[440px] sm:h-[440px] md:w-[480px] md:h-[480px]">
+                {/* Glow ring */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#d4af37]/20 via-[#ff7828]/15 to-transparent blur-xl" />
 
-                  {/* Floating Highlight Card */}
-                  <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl bg-mandi-surface/95 backdrop-blur-md border border-mandi-border shadow-xl flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-1 text-gold-400 text-xs font-bold">
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>#1 BESTSELLER IN THAGARAPUVALASA</span>
-                      </div>
-                      <h3 className="font-heading font-bold text-white text-base mt-0.5">
-                        Faham Chicken Mandi
-                      </h3>
-                      <p className="text-[11px] text-slate-300">Smoked basmati + charcoal chicken + toum</p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-xs text-slate-400 line-through">₹360</span>
-                      <div className="text-lg font-black text-gold-400">₹329</div>
-                    </div>
+                {/* Dark Ceramic Plate Container */}
+                <div className="relative w-full h-full rounded-full overflow-hidden circular-plate-glow p-2 bg-[#0d0d11]">
+                  <Image
+                    src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=1000"
+                    alt="Authentic S & H Arabian Mandi Platter"
+                    fill
+                    priority
+                    className="object-cover rounded-full hover:scale-105 transition-transform duration-700"
+                  />
+
+                  {/* Steam Wisp Element */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-32 h-40 bg-gradient-to-t from-transparent via-white/10 to-transparent rounded-full blur-xl steam-wisp" />
                   </div>
                 </div>
 
-                {/* Floating Rating Badge */}
-                <div className="absolute -top-4 -right-4 bg-mandi-card/95 backdrop-blur-md border border-gold-500/40 px-3.5 py-2 rounded-2xl shadow-gold-sm flex items-center gap-2">
-                  <Star className="w-4 h-4 fill-gold-400 text-gold-400" />
-                  <div>
-                    <span className="text-xs font-bold text-white">4.9 / 5.0</span>
-                    <span className="text-[10px] text-slate-400 block">500+ Local Reviews</span>
+                {/* Floating Gold Coin Emblem (Inspired by Image 1 & 4) */}
+                <div className="absolute -bottom-2 -left-2 sm:bottom-4 sm:left-4 z-20 bg-[#121216]/95 border border-[#d4af37]/40 rounded-2xl p-3 shadow-2xl backdrop-blur-md flex items-center gap-3">
+                  <div className="gold-seal-badge">
+                    <span>14</span>
                   </div>
+                  <div>
+                    <div className="text-[10px] font-cinzel text-[#a1a1aa] uppercase">Ancestral Recipe</div>
+                    <div className="text-xs font-bold text-[#fceda2]">14 Yemeni Secret Aromatics</div>
+                  </div>
+                </div>
+
+                {/* Floating Price Seal */}
+                <div className="absolute top-4 -right-2 sm:top-8 sm:right-2 z-20 bg-[#121216]/95 border border-[#d4af37]/40 rounded-full px-4 py-2 shadow-2xl backdrop-blur-md">
+                  <span className="text-xs font-cinzel text-[#a1a1aa] mr-1">From</span>
+                  <span className="font-mono font-black text-sm text-[#fceda2]">₹280</span>
                 </div>
               </div>
             </div>
@@ -186,300 +233,408 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. CATEGORIES BROWSER */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white">
-              Explore Our Authentic Categories
+      {/* =========================================================================
+          2. SECTION: 3-COLUMN SIGNATURE INSIGNIA TILES (Inspired by Image 1 & 2)
+          ========================================================================= */}
+      <section className="py-16 sm:py-20 border-b border-[#272730]/60 bg-[#0c0c0f]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Divider & Header */}
+          <div className="text-center max-w-2xl mx-auto space-y-2 mb-12">
+            <p className="font-cinzel text-xs tracking-[0.3em] text-[#d4af37] uppercase">
+              — TOBE SCW —
+            </p>
+            <h2 className="font-cinzel text-2xl sm:text-4xl font-bold text-[#fceda2]">
+              Three Pillars of Yemeni Heritage
             </h2>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              From signature smoked Mandi to royal desserts & family feasts
+            <p className="text-xs sm:text-sm text-[#a1a1aa] font-sans font-light">
+              Rooted in centuries of Arabian culinary tradition, prepared in traditional sealed pit ovens.
             </p>
           </div>
-          <NextLink
-            href="/menu"
-            className="text-xs sm:text-sm font-semibold text-gold-400 hover:text-gold-300 flex items-center gap-1"
-          >
-            <span>View All</span>
-            <ChevronRight className="w-4 h-4" />
-          </NextLink>
-        </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-          {categories.slice(0, 6).map((cat) => (
-            <NextLink
-              key={cat.id}
-              href={`/menu?category=${cat.slug}`}
-              className="group bg-mandi-card border border-mandi-border hover:border-gold-500/50 rounded-2xl p-3.5 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-gold-sm flex flex-col items-center"
-            >
-              <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-3 border-2 border-mandi-border group-hover:border-gold-400 transition-colors">
-                <Image
-                  src={cat.image || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200'}
-                  alt={cat.name}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-500"
-                />
+          {/* 3 Luxury Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Card 1 */}
+            <div className="slate-plate-card rounded-2xl p-6 sm:p-7 flex flex-col justify-between text-center group">
+              <div className="space-y-4">
+                <div className="gold-seal-badge mx-auto">
+                  <span>Ⅰ</span>
+                </div>
+                <h3 className="font-cinzel text-lg font-bold text-[#fceda2] tracking-wider uppercase group-hover:text-white transition-colors">
+                  Underground Coal Pit
+                </h3>
+                <p className="text-xs text-[#d4d4d8] leading-relaxed font-sans font-light">
+                  Long-grain aged basmati rice slow-smoked in deep airtight pits under iron grids of marinated meats, capturing every drop of savory essence.
+                </p>
               </div>
-              <h3 className="font-heading font-semibold text-xs sm:text-sm text-white group-hover:text-gold-400 transition-colors line-clamp-1">
-                {cat.name}
-              </h3>
-              <span className="text-[10px] text-slate-400 mt-0.5">Explore dishes</span>
-            </NextLink>
-          ))}
-        </div>
-      </section>
 
-      {/* 3. POPULAR & BESTSELLING MANDI DISHES */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <div className="flex items-center gap-2 text-gold-400 text-xs font-bold uppercase tracking-wider">
-              <TrendingUp className="w-4 h-4" />
-              <span>Thagarapuvalasa Favorites</span>
-            </div>
-            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mt-1">
-              Top Selling Arabian Mandi Specials
-            </h2>
-          </div>
-          <NextLink
-            href="/menu"
-            className="px-4 py-2 rounded-xl bg-mandi-surface hover:bg-mandi-elevated border border-mandi-border text-xs font-semibold text-slate-200 transition-colors"
-          >
-            Explore Full Menu
-          </NextLink>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {bestsellers.slice(0, 6).map((item) => (
-            <div
-              key={item.id}
-              className="bg-mandi-card border border-mandi-border hover:border-gold-500/40 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col group"
-            >
-              {/* Image & Badges */}
-              <div
-                className="relative h-48 sm:h-52 w-full bg-mandi-surface cursor-pointer overflow-hidden"
-                onClick={() => setSelectedFood(item)}
-              >
+              <div className="mt-6 pt-6 border-t border-[#272730] relative w-full h-44 rounded-xl overflow-hidden">
                 <Image
-                  src={item.image}
-                  alt={item.name}
+                  src="/images/showcase/mandi_coal_dum.jpg"
+                  alt="Underground Pit Mandi"
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-mandi-card via-transparent to-transparent opacity-60" />
+              </div>
+            </div>
 
-                <div className="absolute top-3 left-3 flex gap-1.5">
-                  <span
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                      item.isVeg ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/30' : 'bg-red-950 text-red-400 border border-red-500/30'
+            {/* Card 2 */}
+            <div className="slate-plate-card rounded-2xl p-6 sm:p-7 flex flex-col justify-between text-center group">
+              <div className="space-y-4">
+                <div className="gold-seal-badge mx-auto">
+                  <span>Ⅱ</span>
+                </div>
+                <h3 className="font-cinzel text-lg font-bold text-[#fceda2] tracking-wider uppercase group-hover:text-white transition-colors">
+                  Acacia Charcoal Faham
+                </h3>
+                <p className="text-xs text-[#d4d4d8] leading-relaxed font-sans font-light">
+                  Direct live flame roasting of fresh chicken steeped in sumac, garlic, and cumin over blazing coals for crispy char and succulent juicy interior.
+                </p>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-[#272730] relative w-full h-44 rounded-xl overflow-hidden">
+                <Image
+                  src="/images/showcase/tandoor_skewers.jpg"
+                  alt="Charcoal Faham Roast"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+            </div>
+
+            {/* Card 3 */}
+            <div className="slate-plate-card rounded-2xl p-6 sm:p-7 flex flex-col justify-between text-center group">
+              <div className="space-y-4">
+                <div className="gold-seal-badge mx-auto">
+                  <span>Ⅲ</span>
+                </div>
+                <h3 className="font-cinzel text-lg font-bold text-[#fceda2] tracking-wider uppercase group-hover:text-white transition-colors">
+                  Sultan Communal Platters
+                </h3>
+                <p className="text-xs text-[#d4d4d8] leading-relaxed font-sans font-light">
+                  Grand round feasting trays for 2 to 6 patrons, accompanied by freshly whipped garlic toum, spicy tomato dakkoos, and hot melted cheese kunafa.
+                </p>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-[#272730] relative w-full h-44 rounded-xl overflow-hidden">
+                <Image
+                  src="https://images.unsplash.com/photo-1541832676-9b763b0239ab?q=80&w=500"
+                  alt="Sultan Communal Feast"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          3. SECTION: ALTERNATING ZIG-ZAG MASTER DISHES (Inspired by Image 3 & 5)
+          ========================================================================= */}
+      <section className="py-20 border-b border-[#272730]/60 arabian-pattern">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
+          {/* Section Header */}
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <p className="font-cinzel text-xs tracking-[0.3em] text-[#d4af37] uppercase">
+              — SIGNATURE PLATES —
+            </p>
+            <h2 className="font-cinzel text-2xl sm:text-4xl font-bold text-[#fceda2]">
+              Handcrafted on Ancient Acacia Coals
+            </h2>
+            <p className="text-xs sm:text-sm text-[#a1a1aa] font-sans font-light">
+              Every dish is individually prepared by master ustads using authentic brass deghs.
+            </p>
+          </div>
+
+          {/* Alternating Dishes Feed */}
+          <div className="space-y-20">
+            {signaturePlatters.map((dish, index) => {
+              const isEven = index % 2 === 0;
+
+              return (
+                <div
+                  key={dish.id}
+                  className={`grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center ${
+                    isEven ? '' : 'lg:flex-row-reverse'
+                  }`}
+                >
+                  {/* Text Details Column */}
+                  <div
+                    className={`lg:col-span-6 space-y-5 text-center lg:text-left ${
+                      isEven ? 'lg:order-1' : 'lg:order-2'
                     }`}
                   >
-                    {item.isVeg ? 'Veg' : 'Non-Veg'}
-                  </span>
-                  {item.isBestseller && (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-black">
-                      Bestseller
-                    </span>
-                  )}
-                </div>
-
-                <div className="absolute bottom-3 left-3 flex items-center gap-2 text-xs text-white">
-                  <span className="bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded font-medium">
-                    🔥 {item.spiceLevel}
-                  </span>
-                  <span className="bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded font-medium">
-                    ⏱️ ~{item.preparationTimeMin} mins
-                  </span>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3
-                    className="font-heading font-bold text-base text-white hover:text-gold-400 transition-colors cursor-pointer"
-                    onClick={() => setSelectedFood(item)}
-                  >
-                    {item.name}
-                  </h3>
-                  <p className="text-xs text-slate-400 line-clamp-2 mt-1">
-                    {item.description}
-                  </p>
-                </div>
-
-                {/* Price & Action */}
-                <div className="pt-4 mt-3 border-t border-mandi-border/80 flex items-center justify-between">
-                  <div>
-                    {item.discountedPrice ? (
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="font-heading font-black text-lg text-gold-400">
-                          ₹{item.discountedPrice}
-                        </span>
-                        <span className="text-xs text-slate-500 line-through">
-                          ₹{item.price}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="font-heading font-black text-lg text-gold-400">
-                        ₹{item.price}
+                    <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
+                      <span className="zomato-nonveg-mark" />
+                      <span className="text-[11px] font-cinzel text-[#d4af37] tracking-widest uppercase">
+                        {dish.badge}
                       </span>
-                    )}
-                    <span className="text-[10px] text-slate-400 block -mt-0.5">
-                      {item.servingSize ? item.servingSize.replace(/_/g, ' ') : 'Serves 2'}
-                    </span>
+                    </div>
+
+                    <div>
+                      <h3 className="font-cinzel text-2xl sm:text-3xl font-bold text-[#fceda2]">
+                        {dish.name}
+                      </h3>
+                      <p className="text-sm font-arabic text-[#d4af37]/80 mt-1">{dish.arabic}</p>
+                    </div>
+
+                    <p className="text-xs sm:text-sm text-[#d4d4d8] leading-relaxed font-sans font-light max-w-lg mx-auto lg:mx-0">
+                      {dish.desc}
+                    </p>
+
+                    {/* Portion Pricing Pill Chips (Matching Royal Sizing) */}
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-cinzel text-[#a1a1aa] uppercase tracking-wider block">
+                        Select Sizing & Portion Options:
+                      </span>
+                      <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
+                        {dish.sizes.map((sz) => (
+                          <div
+                            key={sz.name}
+                            className="px-3 py-1.5 rounded-lg bg-[#141419] border border-[#272730] text-xs font-mono text-[#fceda2] hover:border-[#d4af37] transition-colors"
+                          >
+                            <span className="font-sans text-[11px] text-[#a1a1aa] mr-1.5">{sz.name}</span>
+                            <span className="font-bold">₹{sz.price}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* CTA Button */}
+                    <div className="pt-2">
+                      <button
+                        onClick={() =>
+                          setSelectedFood({
+                            id: dish.id,
+                            name: dish.name,
+                            basePrice: dish.price,
+                            price: dish.price,
+                            description: dish.desc,
+                            image: dish.image,
+                            category: { name: 'Mandi Specials' },
+                            sizesJson: JSON.stringify(dish.sizes),
+                          })
+                        }
+                        className="btn-royal-gold px-6 py-3 text-xs inline-flex items-center gap-2"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>CUSTOMIZE & ADD TO FEAST</span>
+                      </button>
+                    </div>
                   </div>
 
-                  <button
-                    onClick={() => setSelectedFood(item)}
-                    className="px-4 py-2 rounded-xl bg-gold-gradient text-black font-heading font-bold text-xs tracking-wider shadow-gold-sm hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5"
+                  {/* Circular Plate Image Column */}
+                  <div
+                    className={`lg:col-span-6 flex justify-center ${
+                      isEven ? 'lg:order-2' : 'lg:order-1'
+                    }`}
                   >
-                    <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                    <span>ADD</span>
-                  </button>
+                    <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96">
+                      <div className="relative w-full h-full rounded-full overflow-hidden circular-plate-glow bg-[#0d0d11]">
+                        <Image
+                          src={dish.image}
+                          alt={dish.name}
+                          fill
+                          className="object-cover rounded-full hover:scale-105 transition-transform duration-700"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      {/* 4. PROMOTIONAL OFFERS BANNER */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-r from-amber-950 via-mandi-card to-amber-950 border border-gold-500/40 rounded-3xl p-6 sm:p-10 relative overflow-hidden shadow-2xl">
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-            <div className="md:col-span-8 space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/20 text-gold-300 text-xs font-bold border border-gold-500/30">
-                <Percent className="w-3.5 h-3.5" /> SPECIAL DISCOUNTS
+      {/* =========================================================================
+          4. SECTION: ROYAL SLATE MENU BOARD (Inspired by Image 4 & 1)
+          ========================================================================= */}
+      <section className="py-20 border-b border-[#272730]/60 bg-[#0b0b0e]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto space-y-2 mb-14">
+            <p className="font-cinzel text-xs tracking-[0.3em] text-[#d4af37] uppercase">
+              — SLATE MENU TARIFF —
+            </p>
+            <h2 className="font-cinzel text-2xl sm:text-4xl font-bold text-[#fceda2]">
+              Dine-In & Home Delivery Selections
+            </h2>
+            <p className="text-xs sm:text-sm text-[#a1a1aa] font-sans font-light">
+              Served with unlimited fragrant mandi rice, roasted almond cashews, hot soup & toum dip.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left Slate Board: Mandi Specialties */}
+            <div className="slate-plate-card rounded-2xl p-6 sm:p-8 space-y-6">
+              <div className="flex items-center justify-between border-b border-[#272730] pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="gold-seal-badge">
+                    <span>M</span>
+                  </div>
+                  <div>
+                    <h3 className="font-cinzel text-lg font-bold text-[#fceda2] tracking-wider uppercase">
+                      Royal Mandi Specialties
+                    </h3>
+                    <p className="text-[11px] text-[#a1a1aa]">Pit-smoked over acacia embers</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono text-[#d4af37]">SOLO / SQUAD</span>
               </div>
-              <h2 className="font-heading text-2xl sm:text-3xl font-extrabold text-white">
-                Craving Arabian Mandi Tonight?
+
+              <div className="space-y-4">
+                {[
+                  { name: 'Special Faham Chicken Mandi', solo: 280, squad: 1100 },
+                  { name: 'Tandoori Smoked Chicken Mandi', solo: 270, squad: 1050 },
+                  { name: 'Juicy Mutton Ribs Mandi', solo: 360, squad: 1350 },
+                  { name: 'Crispy Fried Chicken Mandi', solo: 260, squad: 1000 },
+                  { name: 'Fish Mandi (Apollo Sea Fish)', solo: 340, squad: 1250 },
+                  { name: 'Royal Prawns Butter Mandi', solo: 350, squad: 1300 },
+                  { name: 'Paneer Makhani Veg Mandi (Pure Veg)', solo: 230, squad: 880 },
+                ].map((dish) => (
+                  <div key={dish.name} className="flex items-baseline justify-between text-xs sm:text-sm">
+                    <span className="font-medium text-[#f4f4f5] whitespace-nowrap">{dish.name}</span>
+                    <span className="menu-dots" />
+                    <div className="font-mono font-bold text-[#fceda2] whitespace-nowrap flex items-center gap-2">
+                      <span>₹{dish.solo}</span>
+                      <span className="text-[#a1a1aa] font-normal text-xs">/ ₹{dish.squad}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-4 border-t border-[#272730] text-center">
+                <NextLink
+                  href="/menu?category=arabian-mandi"
+                  className="text-xs font-cinzel text-[#d4af37] hover:underline"
+                >
+                  VIEW ALL 15 MANDI VARIETIES →
+                </NextLink>
+              </div>
+            </div>
+
+            {/* Right Slate Board: Starters, Grills & Desserts */}
+            <div className="slate-plate-card rounded-2xl p-6 sm:p-8 space-y-6">
+              <div className="flex items-center justify-between border-b border-[#272730] pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="gold-seal-badge">
+                    <span>S</span>
+                  </div>
+                  <div>
+                    <h3 className="font-cinzel text-lg font-bold text-[#fceda2] tracking-wider uppercase">
+                      Grills, Kebabs & Kunafa
+                    </h3>
+                    <p className="text-[11px] text-[#a1a1aa]">Charcoal charred & molten cheese</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono text-[#d4af37]">PRICE (INR)</span>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  { name: 'Shish Taouk Charcoal Kebab (8 Pcs)', price: 280 },
+                  { name: 'Dragon Crispy Chicken', price: 260 },
+                  { name: 'Arabian Glazed Honey Wings (6 Pcs)', price: 240 },
+                  { name: 'Mutton Ghee Roast Fry (Boneless)', price: 340 },
+                  { name: 'Chilli Paneer & Crispy Corn (Veg)', price: 220 },
+                  { name: 'Royal Melted Cheese Kunafa', price: 240 },
+                  { name: 'Nutella Cream Kunafa Royale', price: 260 },
+                ].map((dish) => (
+                  <div key={dish.name} className="flex items-baseline justify-between text-xs sm:text-sm">
+                    <span className="font-medium text-[#f4f4f5] whitespace-nowrap">{dish.name}</span>
+                    <span className="menu-dots" />
+                    <span className="font-mono font-bold text-[#fceda2] whitespace-nowrap">₹{dish.price}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-4 border-t border-[#272730] text-center">
+                <NextLink
+                  href="/menu"
+                  className="text-xs font-cinzel text-[#d4af37] hover:underline"
+                >
+                  EXPLORE FULL ONLINE ORDERING MENU →
+                </NextLink>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          5. SECTION: PINTEREST SIZZLER REEL & CULINARY ARTISTRY (Image 5)
+          ========================================================================= */}
+      <section className="py-20 border-b border-[#272730]/60 arabian-pattern">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <p className="font-cinzel text-xs tracking-[0.3em] text-[#d4af37] uppercase">
+              — CULINARY MASTERY —
+            </p>
+            <h2 className="font-cinzel text-2xl sm:text-4xl font-bold text-[#fceda2]">
+              Live Fire, Smoked Basmati & Molten Cheese
+            </h2>
+            <p className="text-xs sm:text-sm text-[#a1a1aa] font-sans font-light">
+              Witness our master chefs preparing authentic Mandi, tandoori skewers, and stretching cheese kunafa.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left: Video Reel Card */}
+            <div className="lg:col-span-5 flex justify-center">
+              <SizzlerReelCard onOrderClick={() => setSelectedFood(signaturePlatters[0])} />
+            </div>
+
+            {/* Right: Culinary Showcase Grid */}
+            <div className="lg:col-span-7">
+              <CulinaryShowcase />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          6. SECTION: DIRECT ORDER & TABLE RESERVATION CALLOUT
+          ========================================================================= */}
+      <section className="py-16 bg-[#0c0c0f]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="slate-plate-card rounded-3xl p-8 sm:p-12 text-center space-y-6 relative overflow-hidden">
+            <div className="gold-seal-badge mx-auto">
+              <Crown className="w-5 h-5 text-black" />
+            </div>
+
+            <div className="space-y-2">
+              <h2 className="font-cinzel text-2xl sm:text-4xl font-bold text-[#fceda2]">
+                Reserve Your Royal Table or Order to Doorstep
               </h2>
-              <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
-                Use code <span className="font-mono text-gold-400 font-bold bg-black/40 px-2 py-0.5 rounded">MANDI100</span> for flat ₹100 off on platters above ₹699, or <span className="font-mono text-gold-400 font-bold bg-black/40 px-2 py-0.5 rounded">FREEDEL</span> for free home delivery!
+              <p className="text-xs sm:text-sm text-[#d4d4d8] font-sans font-light max-w-xl mx-auto">
+                Planning a family feast or celebrating an occasion? Experience our traditional majlis seating in Sangivalasa, or enjoy fast home delivery with real-time GPS tracking.
               </p>
             </div>
-            <div className="md:col-span-4 flex justify-start md:justify-end">
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
               <NextLink
                 href="/menu"
-                className="py-3.5 px-8 rounded-2xl bg-gold-gradient text-black font-heading font-black text-sm tracking-wide shadow-gold-sm hover:brightness-110 transition-all text-center w-full sm:w-auto"
+                className="btn-royal-gold px-8 py-3.5 text-xs sm:text-sm w-full sm:w-auto"
               >
-                APPLY & ORDER NOW
+                ORDER ONLINE FOR DELIVERY
               </NextLink>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* 5. WHY ARABIAN MANDI EXPERIENCE */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white">
-            The Arabian Mandi Heritage
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-400 mt-2">
-            We honor centuries-old Yemeni tandoor & smoking traditions right here in Thagarapuvalasa.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="p-6 rounded-2xl bg-mandi-card border border-mandi-border space-y-3 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-gold-500/10 text-gold-400 border border-gold-500/20 flex items-center justify-center mx-auto text-2xl">
-              🔥
-            </div>
-            <h3 className="font-heading font-bold text-base text-white">
-              Coal-Smoked Basmati
-            </h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Infused with charcoal smoke, ghee, green cardamom, cloves, and toasted dry fruits for unforgettable aroma.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-2xl bg-mandi-card border border-mandi-border space-y-3 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-gold-500/10 text-gold-400 border border-gold-500/20 flex items-center justify-center mx-auto text-2xl">
-              🍗
-            </div>
-            <h3 className="font-heading font-bold text-base text-white">
-              Succulent Slow-Roasted Meats
-            </h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Marinated in traditional Yemeni hawaij spices. Meat braised to fall-off-the-bone tenderness.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-2xl bg-mandi-card border border-mandi-border space-y-3 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-gold-500/10 text-gold-400 border border-gold-500/20 flex items-center justify-center mx-auto text-2xl">
-              🧄
-            </div>
-            <h3 className="font-heading font-bold text-base text-white">
-              Handcrafted Toum & Shatta
-            </h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Creamy, whipped authentic garlic toum dip alongside spicy crushed tomato dakkoos salsa.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-2xl bg-mandi-card border border-mandi-border space-y-3 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-gold-500/10 text-gold-400 border border-gold-500/20 flex items-center justify-center mx-auto text-2xl">
-              🛵
-            </div>
-            <h3 className="font-heading font-bold text-base text-white">
-              Piping Hot Fast Delivery
-            </h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Dispatched in thermal insulated packaging with real-time GPS tracking all the way to your door.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. VERIFIED CUSTOMER REVIEWS */}
-      {reviews.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <div className="inline-flex items-center gap-1 text-gold-400 text-xs font-bold uppercase tracking-wider">
-              <Star className="w-3.5 h-3.5 fill-gold-400" />
-              <span>Customer Satisfaction</span>
-            </div>
-            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mt-1">
-              Loved Across Thagarapuvalasa
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {reviews.slice(0, 3).map((rev) => (
-              <div
-                key={rev.id}
-                className="p-6 rounded-2xl bg-mandi-card border border-mandi-border flex flex-col justify-between space-y-4"
+              <a
+                href="tel:+918919234567"
+                className="btn-royal-outline px-8 py-3.5 text-xs sm:text-sm w-full sm:w-auto flex items-center justify-center gap-2"
               >
-                <div className="space-y-3">
-                  <div className="flex items-center gap-1 text-gold-400">
-                    {[...Array(rev.rating || 5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-gold-400" />
-                    ))}
-                  </div>
-                  <p className="text-xs text-slate-300 italic leading-relaxed">
-                    &ldquo;{rev.comment}&rdquo;
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3 pt-3 border-t border-mandi-border/80">
-                  <div className="w-9 h-9 rounded-full bg-gold-500 text-black font-bold text-xs flex items-center justify-center">
-                    {rev.user?.name?.[0] || 'C'}
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-xs text-white">{rev.user?.name || 'Customer'}</h4>
-                    <span className="text-[10px] text-slate-400">Verified Diner in Thagarapuvalasa</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+                <Phone className="w-3.5 h-3.5 text-[#d4af37]" />
+                <span>BOOK TABLE: +91 89192 34567</span>
+              </a>
+            </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* Customization Modal */}
+      {/* Food Customization Modal */}
       <FoodModal item={selectedFood} onClose={() => setSelectedFood(null)} />
+
+      {/* Location Selector Modal */}
       <LocationModal isOpen={locationModalOpen} onClose={() => setLocationModalOpen(false)} />
     </div>
   );

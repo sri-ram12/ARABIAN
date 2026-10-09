@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { comparePassword, signToken } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/rate-limit';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -10,6 +11,18 @@ const loginSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || 'local';
+    const rateCheck = checkRateLimit(`login_${ip}`, 8, 60000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Too many login attempts. Please wait ${rateCheck.resetInSec} seconds.`,
+        },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const result = loginSchema.safeParse(body);
 

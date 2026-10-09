@@ -16,6 +16,8 @@ import {
   Package,
   ArrowRight,
   ShieldAlert,
+  MessageCircle,
+  Radio,
 } from 'lucide-react';
 
 export default function DeliveryPartnerPage() {
@@ -33,8 +35,11 @@ export default function DeliveryPartnerPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Simulated GPS broadcast interval
+  // GPS broadcast states
   const [isBroadcastingGps, setIsBroadcastingGps] = useState(false);
+  const [isLiveDeviceGpsActive, setIsLiveDeviceGpsActive] = useState(false);
+  const [gpsWatchId, setGpsWatchId] = useState<number | null>(null);
+  const [gpsError, setGpsError] = useState<string | null>(null);
 
   // Protect route
   useEffect(() => {
@@ -97,7 +102,7 @@ export default function DeliveryPartnerPage() {
   };
 
   // Broadcast GPS location to server
-  const broadcastLocation = async (lat: number, lng: number) => {
+  const broadcastLocation = async (lat: number, lng: number, heading = 140, speed = 30) => {
     if (!activeDelivery?.orderId) return;
     try {
       await fetch('/api/delivery/location', {
@@ -107,12 +112,64 @@ export default function DeliveryPartnerPage() {
           orderId: activeDelivery.orderId,
           latitude: lat,
           longitude: lng,
-          heading: 140,
-          speed: 32,
+          heading,
+          speed,
         }),
       });
     } catch (e) {}
   };
+
+  // Real Mobile GPS Tracker (Reads real device GPS sensor via browser)
+  const toggleLiveDeviceGps = () => {
+    if (isLiveDeviceGpsActive && gpsWatchId !== null) {
+      navigator.geolocation.clearWatch(gpsWatchId);
+      setGpsWatchId(null);
+      setIsLiveDeviceGpsActive(false);
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      setGpsError('Geolocation is not supported on this browser.');
+      return;
+    }
+
+    setGpsError(null);
+    try {
+      const watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          setIsLiveDeviceGpsActive(true);
+          broadcastLocation(
+            position.coords.latitude,
+            position.coords.longitude,
+            position.coords.heading || 0,
+            position.coords.speed ? Math.round(position.coords.speed * 3.6) : 25
+          );
+        },
+        (err) => {
+          console.error('Real GPS error:', err);
+          setGpsError('GPS permission was denied or device location is off.');
+          setIsLiveDeviceGpsActive(false);
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 10000,
+          timeout: 15000,
+        }
+      );
+      setGpsWatchId(watchId);
+    } catch (e) {
+      setGpsError('Failed to access phone GPS.');
+    }
+  };
+
+  // Clean up GPS watcher on unmount
+  useEffect(() => {
+    return () => {
+      if (gpsWatchId !== null && typeof navigator !== 'undefined') {
+        navigator.geolocation.clearWatch(gpsWatchId);
+      }
+    };
+  }, [gpsWatchId]);
 
   // Simulated GPS Broadcast (Moves rider along NH16 towards customer)
   const toggleGpsSimulation = () => {
@@ -241,20 +298,29 @@ export default function DeliveryPartnerPage() {
                 </p>
               )}
 
-              <div className="pt-2 flex gap-2">
+              <div className="pt-2 grid grid-cols-3 gap-2">
                 <a
                   href={`tel:${activeDelivery.order?.customer?.phone}`}
-                  className="flex-1 py-2 px-3 rounded-xl bg-gold-gradient text-black font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm"
+                  className="py-2 px-2 rounded-xl bg-gold-gradient text-black font-bold text-xs flex items-center justify-center gap-1 shadow-sm"
                 >
-                  <Phone className="w-3.5 h-3.5" /> Call Customer
+                  <Phone className="w-3.5 h-3.5" /> Call
                 </a>
                 <a
-                  href={`https://maps.google.com/?q=${activeDelivery.order?.address?.latitude},${activeDelivery.order?.address?.longitude}`}
+                  href={`https://wa.me/91${activeDelivery.order?.customer?.phone?.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${activeDelivery.order?.customer?.name}, this is your Arabian Mandi delivery partner regarding order ${activeDelivery.order?.orderNumber}. I am on the way.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-2 px-2 rounded-xl bg-emerald-950 border border-emerald-500/40 hover:bg-emerald-900 text-emerald-400 font-bold text-xs flex items-center justify-center gap-1"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                </a>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${activeDelivery.order?.address?.latitude || 17.9250},${activeDelivery.order?.address?.longitude || 83.4385}&travelmode=driving`}
                   target="_blank"
                   rel="noreferrer"
-                  className="py-2 px-3 rounded-xl bg-mandi-card border border-mandi-border hover:border-slate-500 text-white font-semibold text-xs flex items-center gap-1.5"
+                  className="py-2 px-2 rounded-xl bg-mandi-card border border-mandi-border hover:border-blue-500 text-white font-semibold text-xs flex items-center justify-center gap-1"
+                  title="Turn-by-turn Navigation in Google Maps"
                 >
-                  <Navigation className="w-3.5 h-3.5 text-blue-400" /> GPS Map
+                  <Navigation className="w-3.5 h-3.5 text-blue-400" /> Navigate
                 </a>
               </div>
             </div>
@@ -336,22 +402,47 @@ export default function DeliveryPartnerPage() {
 
             {activeDelivery.status === 'PICKED_UP' && (
               <div className="space-y-4 bg-mandi-surface p-5 rounded-2xl border border-mandi-border">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <span className="font-heading font-bold text-xs text-white flex items-center gap-2">
                     <Navigation className="w-4 h-4 text-emerald-400" />
                     <span>Live GPS Location Broadcasting</span>
                   </span>
-                  <button
-                    onClick={toggleGpsSimulation}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
-                      isBroadcastingGps
-                        ? 'bg-emerald-600 text-white border-emerald-400 animate-pulse'
-                        : 'bg-mandi-card border-mandi-border text-slate-300 hover:border-gold-500'
-                    }`}
-                  >
-                    {isBroadcastingGps ? 'Broadcasting Route...' : 'Simulate GPS Movement'}
-                  </button>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Real Device Phone GPS */}
+                    <button
+                      onClick={toggleLiveDeviceGps}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors flex items-center gap-1.5 ${
+                        isLiveDeviceGpsActive
+                          ? 'bg-emerald-600 text-white border-emerald-400 animate-pulse'
+                          : 'bg-mandi-card border-mandi-border text-emerald-400 hover:border-emerald-500'
+                      }`}
+                      title="Broadcast phone's real GPS sensor via browser"
+                    >
+                      <Radio className="w-3.5 h-3.5" />
+                      <span>{isLiveDeviceGpsActive ? 'Phone GPS Active' : 'Use Phone GPS'}</span>
+                    </button>
+
+                    {/* Simulation Route */}
+                    <button
+                      onClick={toggleGpsSimulation}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                        isBroadcastingGps
+                          ? 'bg-amber-600 text-white border-amber-400 animate-pulse'
+                          : 'bg-mandi-card border-mandi-border text-slate-300 hover:border-gold-500'
+                      }`}
+                    >
+                      {isBroadcastingGps ? 'Simulating Route...' : 'Simulate Test Route'}
+                    </button>
+                  </div>
                 </div>
+
+                {gpsError && (
+                  <div className="p-2.5 rounded-lg bg-red-950/40 border border-red-500/30 text-[11px] text-red-300 flex items-center gap-2">
+                    <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                    <span>{gpsError}</span>
+                  </div>
+                )}
 
                 <div className="pt-2 border-t border-mandi-border space-y-2">
                   <label className="text-xs font-semibold text-slate-300 block">

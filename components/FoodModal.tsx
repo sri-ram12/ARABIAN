@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useCart, CartAddon } from '@/context/CartContext';
-import { X, Plus, Minus, Flame, Sparkles, Check, ShoppingBag } from 'lucide-react';
+import { X, Plus, Minus, Flame, Sparkles, Check, Users, Crown, Star } from 'lucide-react';
 
 interface Props {
   item: any | null;
@@ -27,7 +27,6 @@ export default function FoodModal({ item, onClose }: Props) {
 
   const [selectedAddons, setSelectedAddons] = useState<CartAddon[]>([]);
   const [quantity, setQuantity] = useState<number>(1);
-  const [specialNote, setSpecialNote] = useState<string>('');
 
   if (!item) return null;
 
@@ -66,19 +65,28 @@ export default function FoodModal({ item, onClose }: Props) {
     onClose();
   };
 
+  const getPortionServingDesc = (name: string) => {
+    const lower = name.toLowerCase();
+    if (lower.includes('solo') || lower.includes('1p')) return 'Serves 1 Person';
+    if (lower.includes('duo') || lower.includes('2p')) return 'Serves 2 Diners';
+    if (lower.includes('trio') || lower.includes('3p')) return 'Serves 3 Foodies';
+    if (lower.includes('squad') || lower.includes('4p')) return 'Serves 4 - 5 Grand Feast';
+    return '1 Portion';
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="bg-mandi-card border border-mandi-border rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
+      <div className="bg-[#121216] rounded-3xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl relative border border-[#d4af37]/40 divide-y divide-[#272730] text-[#f4f4f5]">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/60 text-white hover:bg-black/90 transition-colors"
+          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/60 text-[#d4d4d8] hover:text-white border border-[#272730] shadow-md transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Food Banner Image */}
-        <div className="relative h-64 sm:h-72 w-full bg-mandi-surface overflow-hidden">
+        <div className="relative h-56 sm:h-64 w-full bg-[#18181f] overflow-hidden">
           <Image
             src={item.image}
             alt={item.name}
@@ -86,158 +94,177 @@ export default function FoodModal({ item, onClose }: Props) {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-mandi-card via-transparent to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#121216] via-transparent to-transparent" />
 
-          {/* Badges */}
-          <div className="absolute top-4 left-4 flex gap-2">
+          {/* Badges on Image */}
+          <div className="absolute top-4 left-4 z-10 flex gap-2">
+            {item.isVeg ? (
+              <span className="zomato-veg-mark shadow-sm" />
+            ) : (
+              <span className="zomato-nonveg-mark shadow-sm" />
+            )}
             {item.isBestseller && (
-              <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500 text-black flex items-center gap-1 shadow-md">
-                <Sparkles className="w-3.5 h-3.5" /> Bestseller
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-cinzel font-bold bg-[#d4af37] text-black shadow-md flex items-center gap-1">
+                <Crown className="w-3 h-3 text-black" />
+                <span>Bestseller</span>
               </span>
             )}
-            <span
-              className={`px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${
-                item.isVeg ? 'bg-emerald-900/80 text-emerald-300 border border-emerald-500/40' : 'bg-red-900/80 text-red-300 border border-red-500/40'
-              }`}
-            >
-              {item.isVeg ? 'Veg' : 'Non-Veg'}
-            </span>
-          </div>
-
-          <div className="absolute bottom-4 left-4 right-4">
-            <h2 className="font-heading text-2xl font-bold text-white drop-shadow-md">
-              {item.name}
-            </h2>
-            <p className="text-xs text-slate-300 line-clamp-2 mt-1">
-              {item.description}
-            </p>
           </div>
         </div>
 
-        {/* Customization Details */}
-        <div className="p-6 space-y-6">
-          {/* Portion Size Selection */}
-          {availableSizes.length > 0 && (
+        {/* Dish Title & Description Header */}
+        <div className="p-6 space-y-2">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="font-heading font-semibold text-sm text-white">
-                  Choose Portion Size
+              <h2 className="font-cinzel text-xl sm:text-2xl font-bold text-[#fceda2] leading-tight">
+                {item.name}
+              </h2>
+              {item.category?.name && (
+                <span className="text-xs text-[#d4af37] font-cinzel uppercase tracking-wider block mt-1">
+                  {item.category.name}
                 </span>
-                <span className="text-[11px] text-gold-400 font-bold uppercase tracking-wider">Required</span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                {availableSizes.map((size) => {
-                  const isSelected = selectedSize === size.name;
-                  return (
-                    <button
-                      key={size.name}
-                      type="button"
-                      onClick={() => setSelectedSize(size.name)}
-                      className={`p-3 rounded-xl border text-left transition-all ${
-                        isSelected
-                          ? 'bg-gold-500/15 border-gold-500 text-white shadow-gold-sm'
-                          : 'bg-mandi-surface border-mandi-border hover:border-slate-600 text-slate-300'
-                      }`}
-                    >
-                      <div className="font-semibold text-xs">{size.name}</div>
-                      <div className="text-gold-400 font-bold text-sm mt-1">
-                        ₹{size.price}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+              )}
             </div>
-          )}
-
-          {/* Add-ons Selection */}
-          {item.addons && item.addons.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="font-heading font-semibold text-sm text-white">
-                  Add Arabian Sides & Accompaniments
-                </span>
-                <span className="text-[11px] text-slate-400">Optional</span>
-              </div>
-              <div className="space-y-2">
-                {item.addons.map((addon: any) => {
-                  const isChecked = selectedAddons.some((a) => a.name === addon.name);
-                  return (
-                    <div
-                      key={addon.id || addon.name}
-                      onClick={() => toggleAddon(addon)}
-                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
-                        isChecked
-                          ? 'bg-gold-500/10 border-gold-500/60 text-white'
-                          : 'bg-mandi-surface border-mandi-border hover:border-slate-600 text-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-5 h-5 rounded-md flex items-center justify-center border ${
-                            isChecked
-                              ? 'bg-gold-500 border-gold-500 text-black'
-                              : 'border-slate-500 bg-transparent'
-                          }`}
-                        >
-                          {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                        </div>
-                        <span className="text-xs font-medium">{addon.name}</span>
-                      </div>
-                      <span className="text-xs font-bold text-gold-400">+₹{addon.price}</span>
-                    </div>
-                  );
-                })}
-              </div>
+            <div className="text-right flex-shrink-0">
+              <span className="font-mono text-xl sm:text-2xl font-bold text-[#fceda2]">
+                ₹{basePrice}
+              </span>
             </div>
-          )}
-
-          {/* Spice Level & Ingredients Preview */}
-          <div className="p-3.5 rounded-xl bg-mandi-surface/70 border border-mandi-border text-xs space-y-1.5">
-            <div className="flex items-center gap-2 text-slate-300">
-              <Flame className="w-4 h-4 text-amber-500" />
-              <span>Spice Level: <strong className="text-white">{item.spiceLevel}</strong></span>
-              <span className="text-slate-500">•</span>
-              <span>Prep Time: <strong className="text-white">~{item.preparationTimeMin} mins</strong></span>
-            </div>
-            {item.ingredients && (
-              <p className="text-[11px] text-slate-400">
-                Ingredients: {item.ingredients}
-              </p>
-            )}
           </div>
 
-          {/* Quantity Controls & Add to Cart Action */}
-          <div className="pt-4 border-t border-mandi-border flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 bg-mandi-surface border border-mandi-border rounded-xl p-1">
-              <button
-                type="button"
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-300 hover:text-white hover:bg-mandi-card"
-              >
-                <Minus className="w-4 h-4" />
-              </button>
-              <span className="w-8 text-center font-bold text-sm text-white">
-                {quantity}
+          {item.description && (
+            <p className="text-xs sm:text-sm text-[#d4d4d8] font-sans font-light leading-relaxed pt-1">
+              {item.description}
+            </p>
+          )}
+        </div>
+
+        {/* Mandi Portion Sizes Section */}
+        {availableSizes.length > 0 && (
+          <div className="p-6 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-cinzel font-bold text-[#fceda2] uppercase tracking-wider">
+                Select Mandi Portion Size
               </span>
-              <button
-                type="button"
-                onClick={() => setQuantity(quantity + 1)}
-                className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-300 hover:text-white hover:bg-mandi-card"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
+              <span className="text-[10px] font-mono text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded border border-[#d4af37]/30">
+                Required
+              </span>
             </div>
 
+            <div className="grid grid-cols-2 gap-3">
+              {availableSizes.map((size) => {
+                const isSelected = selectedSize === size.name;
+                return (
+                  <div
+                    key={size.name}
+                    onClick={() => setSelectedSize(size.name)}
+                    className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
+                      isSelected
+                        ? 'bg-[#d4af37]/15 border-[#d4af37] shadow-gold-sm'
+                        : 'bg-[#18181f] border-[#272730] hover:border-[#383845]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-cinzel font-bold text-xs text-[#fceda2]">
+                        {size.name}
+                      </span>
+                      <div
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                          isSelected ? 'border-[#d4af37] bg-[#d4af37]' : 'border-neutral-600'
+                        }`}
+                      >
+                        {isSelected && <Check className="w-2.5 h-2.5 text-black stroke-[3]" />}
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-[#a1a1aa] mt-1">
+                      {getPortionServingDesc(size.name)}
+                    </span>
+                    <span className="font-mono font-bold text-xs text-white mt-2">
+                      ₹{size.price}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Accompaniments & Extra Addons */}
+        <div className="p-6 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-cinzel font-bold text-[#fceda2] uppercase tracking-wider">
+              Yemeni Accompaniments & Add-ons
+            </span>
+            <span className="text-[10px] text-[#a1a1aa]">Optional</span>
+          </div>
+
+          <div className="space-y-2">
+            {[
+              { name: 'Extra Fragrant Mandi Rice (Solo Bowl)', price: 60 },
+              { name: 'Traditional Toum Garlic Whip (50ml)', price: 40 },
+              { name: 'Spicy Tomato Dakkoos Chutney', price: 30 },
+              { name: 'Golden Roasted Cashews & Fried Onions', price: 50 },
+              { name: 'Chilled Thums Up Glass Bottle (300ml)', price: 45 },
+            ].map((addon) => {
+              const isChecked = selectedAddons.some((a) => a.name === addon.name);
+              return (
+                <div
+                  key={addon.name}
+                  onClick={() => toggleAddon(addon)}
+                  className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
+                    isChecked
+                      ? 'bg-[#d4af37]/15 border-[#d4af37]'
+                      : 'bg-[#18181f] border-[#272730] hover:border-neutral-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-4 h-4 rounded border flex items-center justify-center ${
+                        isChecked ? 'bg-[#d4af37] border-[#d4af37]' : 'border-neutral-600'
+                      }`}
+                    >
+                      {isChecked && <Check className="w-3 h-3 text-black stroke-[3]" />}
+                    </div>
+                    <span className="text-xs font-medium text-[#d4d4d8]">{addon.name}</span>
+                  </div>
+                  <span className="font-mono font-bold text-xs text-[#fceda2]">
+                    +₹{addon.price}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Bottom CTA & Stepper */}
+        <div className="p-6 bg-[#0f0f13] flex items-center justify-between gap-4 sticky bottom-0 z-20 border-t border-[#272730]">
+          {/* Quantity Stepper */}
+          <div className="flex items-center bg-[#18181f] border border-[#272730] rounded-xl overflow-hidden shadow-inner">
             <button
-              type="button"
-              onClick={handleAddToCart}
-              className="flex-1 py-3.5 px-6 rounded-xl bg-gold-gradient text-black font-heading font-bold text-sm tracking-wide shadow-gold-sm hover:brightness-110 active:scale-98 transition-all flex items-center justify-between"
+              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              className="p-2.5 text-[#d4af37] hover:bg-[#202028] transition-colors"
             >
-              <span>ADD TO CART</span>
-              <span className="text-base font-black">₹{totalPrice}</span>
+              <Minus className="w-4 h-4 stroke-[2.5]" />
+            </button>
+            <span className="px-3 font-mono font-bold text-sm text-[#fceda2] min-w-[28px] text-center">
+              {quantity}
+            </span>
+            <button
+              onClick={() => setQuantity(quantity + 1)}
+              className="p-2.5 text-[#d4af37] hover:bg-[#202028] transition-colors"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
             </button>
           </div>
+
+          {/* Add to Cart Button */}
+          <button
+            onClick={handleAddToCart}
+            className="flex-1 btn-royal-gold py-3 px-6 text-xs sm:text-sm flex items-center justify-between"
+          >
+            <span>ADD TO FEAST</span>
+            <span className="font-mono font-black">₹{totalPrice}</span>
+          </button>
         </div>
       </div>
     </div>

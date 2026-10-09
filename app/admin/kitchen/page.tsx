@@ -16,6 +16,9 @@ import {
   RefreshCw,
   ArrowLeft,
   AlertTriangle,
+  Printer,
+  CheckSquare,
+  Square,
 } from 'lucide-react';
 
 export default function KitchenDashboardPage() {
@@ -26,6 +29,62 @@ export default function KitchenDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [now, setNow] = useState(Date.now());
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+
+  const toggleItemCheck = (itemId: string) => {
+    setCheckedItems((prev) => ({
+      ...prev,
+      [itemId]: !prev[itemId],
+    }));
+  };
+
+  const handlePrintKOT = (ord: any) => {
+    const printWindow = window.open('', '_blank', 'width=380,height=600');
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>KOT - ${ord.orderNumber}</title>
+          <style>
+            body { font-family: monospace; font-size: 13px; padding: 12px; color: #000; line-height: 1.4; }
+            h2, h3 { margin: 2px 0; text-align: center; }
+            .divider { border-top: 1px dashed #000; margin: 8px 0; }
+            .item-row { display: flex; justify-content: space-between; margin: 6px 0; font-size: 14px; font-weight: bold; }
+            .note { background: #eee; padding: 6px; font-weight: bold; margin-top: 6px; border: 1px solid #ccc; }
+          </style>
+        </head>
+        <body>
+          <h2>*** KITCHEN TICKET (KOT) ***</h2>
+          <h3>ARABIAN MANDI</h3>
+          <div class="divider"></div>
+          <div><strong>Order:</strong> ${ord.orderNumber}</div>
+          <div><strong>Time:</strong> ${new Date(ord.createdAt).toLocaleTimeString()}</div>
+          <div><strong>Customer:</strong> ${ord.customer?.name || 'Walk-in / Online'}</div>
+          <div class="divider"></div>
+          <div><strong>ITEMS TO PREPARE:</strong></div>
+          ${ord.items
+            .map(
+              (it: any) => `
+            <div class="item-row">
+              <span>[ ] ${it.quantity}x ${it.name} ${it.size ? `(${it.size})` : ''}</span>
+            </div>
+          `
+            )
+            .join('')}
+          ${
+            ord.kitchenNotes
+              ? `<div class="divider"></div><div class="note">NOTE: ${ord.kitchenNotes}</div>`
+              : ''
+          }
+          <div class="divider"></div>
+          <div style="text-align:center;">*** KITCHEN FIFO DISPATCH ***</div>
+          <script>window.print();</script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
 
   // Protect route
   useEffect(() => {
@@ -221,21 +280,30 @@ export default function KitchenDashboardPage() {
                     </span>
                   </div>
 
-                  {/* Elapsed Live Timer */}
-                  <div className="text-right">
-                    <div className="inline-flex items-center gap-1 font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-black/60 text-amber-400 border border-amber-500/30">
-                      <Clock className="w-3.5 h-3.5 animate-pulse" />
-                      <span>{elapsed}</span>
+                  {/* Elapsed Live Timer & KOT Print */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handlePrintKOT(ord)}
+                      className="p-1.5 rounded-lg bg-mandi-surface hover:bg-mandi-elevated text-slate-300 hover:text-white transition-colors"
+                      title="Print Kitchen Ticket (KOT)"
+                    >
+                      <Printer className="w-4 h-4" />
+                    </button>
+                    <div className="text-right">
+                      <div className="inline-flex items-center gap-1 font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-black/60 text-amber-400 border border-amber-500/30">
+                        <Clock className="w-3.5 h-3.5 animate-pulse" />
+                        <span>{elapsed}</span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 block mt-0.5 uppercase tracking-wider font-semibold">
+                        {ord.status.replace(/_/g, ' ')}
+                      </span>
                     </div>
-                    <span className="text-[10px] text-slate-400 block mt-0.5 uppercase tracking-wider font-semibold">
-                      {ord.status.replace(/_/g, ' ')}
-                    </span>
                   </div>
                 </div>
 
-                {/* Items & Portion Sizes */}
+                {/* Items & Portion Sizes with Packing Checklist */}
                 <div className="p-5 space-y-3 flex-1">
-                  <div className="space-y-2.5 divide-y divide-mandi-border/40">
+                  <div className="space-y-1.5 divide-y divide-mandi-border/30">
                     {ord.items.map((it: any) => {
                       let addons = [];
                       if (it.addOnsJson) {
@@ -243,14 +311,29 @@ export default function KitchenDashboardPage() {
                           addons = JSON.parse(it.addOnsJson);
                         } catch (e) {}
                       }
+                      const isChecked = !!checkedItems[it.id];
 
                       return (
-                        <div key={it.id} className="pt-2 first:pt-0">
+                        <div
+                          key={it.id}
+                          onClick={() => toggleItemCheck(it.id)}
+                          className={`pt-2 first:pt-0 cursor-pointer p-2 rounded-xl transition-colors ${
+                            isChecked ? 'bg-emerald-950/40 opacity-75' : 'hover:bg-mandi-surface/50'
+                          }`}
+                          title="Click to check off as packed"
+                        >
                           <div className="flex items-start justify-between gap-2">
-                            <span className="font-heading font-black text-base text-white">
-                              <span className="text-gold-400 mr-2">{it.quantity}×</span>
-                              {it.name}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              {isChecked ? (
+                                <CheckSquare className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                              ) : (
+                                <Square className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                              )}
+                              <span className={`font-heading font-black text-base ${isChecked ? 'line-through text-slate-400' : 'text-white'}`}>
+                                <span className="text-gold-400 mr-2">{it.quantity}×</span>
+                                {it.name}
+                              </span>
+                            </div>
                             {it.size && (
                               <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-gold-500/10 text-gold-300 border border-gold-500/20 uppercase whitespace-nowrap">
                                 {it.size}

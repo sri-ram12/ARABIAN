@@ -48,7 +48,33 @@ const COUPONS = [
 ];
 
 export default function OffersPage() {
+  const [coupons, setCoupons] = useState<any[]>(COUPONS);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    async function loadCoupons() {
+      try {
+        const res = await fetch('/api/coupons');
+        const data = await res.json();
+        if (data.success && data.coupons && data.coupons.length > 0) {
+          const mapped = data.coupons.map((c: any) => ({
+            code: c.code,
+            title: c.title,
+            desc: c.description || (c.discountType === 'PERCENTAGE' ? `${c.discountValue}% discount` : `Flat ₹${c.discountValue} discount`),
+            minOrder: `₹${c.minOrderAmount || 0}`,
+            type: c.discountType,
+            expiry: c.expiresAt ? `Valid till ${new Date(c.expiresAt).toLocaleDateString()}` : 'Valid all days',
+          }));
+          setCoupons(mapped);
+        }
+      } catch (e) {
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadCoupons();
+  }, []);
 
   const handleCopy = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -72,7 +98,7 @@ export default function OffersPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {COUPONS.map((coupon) => {
+        {coupons.map((coupon) => {
           const isCopied = copiedCode === coupon.code;
           return (
             <div

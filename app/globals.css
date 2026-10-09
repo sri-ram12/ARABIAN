@@ -3,91 +3,232 @@
 @tailwind utilities;
 
 :root {
-  --background: #0b0c0e;
-  --foreground: #f8fafc;
-  --gold-primary: #d4af37;
-  --gold-secondary: #f59e0b;
-  --card-bg: #14161a;
-  --surface-bg: #1a1d23;
-  --border-color: #2e3440;
+  --background: #09090b;
+  --foreground: #f4f4f5;
+  --card-bg: #121216;
+  --surface-bg: #18181f;
+  --border-color: #272730;
+  --gold-accent: #d4af37;
+  --amber-flame: #ff7828;
 }
 
 body {
-  color: var(--foreground);
-  background-color: var(--background);
+  color: #f4f4f5;
+  background-color: #09090b;
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Arabian Scrollbar */
+/* Luxury Dark Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0b0c0e;
+  background: #0d0d11;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2e3440;
+  background: #2a2a35;
   border-radius: 9999px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #d4af37;
 }
 
-/* Gold Gradient Text */
+/* Royal Gold Gradient Text */
 .gold-gradient-text {
-  background: linear-gradient(135deg, #fce07c 0%, #d4af37 50%, #9b711c 100%);
+  background: linear-gradient(135deg, #fceda2 0%, #d4af37 50%, #b38728 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* Glow effects */
-.gold-glow {
-  box-shadow: 0 0 25px -4px rgba(212, 175, 55, 0.35);
+/* Warm Ember Fiery Gradient Text */
+.fire-gradient-text {
+  background: linear-gradient(135deg, #fceda2 0%, #ff8a00 50%, #e53935 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.gold-glow-sm {
-  box-shadow: 0 0 12px -2px rgba(212, 175, 55, 0.25);
+/* Luxury Serif Typography Classes */
+.font-cinzel {
+  font-family: var(--font-cinzel), Georgia, serif;
+}
+.font-playfair {
+  font-family: var(--font-playfair), Georgia, serif;
 }
 
-/* Arabian subtle background pattern */
+/* Luxury Slate Plate Card (Inspired by Image 4 & 1) */
+.slate-plate-card {
+  background: linear-gradient(145deg, #16161c 0%, #0d0d11 100%);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slate-plate-card:hover {
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(212, 175, 55, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Gold Coin Seal / Insignia (Inspired by Image 1, 2, 4) */
+.gold-seal-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff1ba 0%, #d4af37 60%, #8c6d1f 100%);
+  color: #121008;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-cinzel), serif;
+  font-weight: 900;
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 235, 160, 0.6);
+  flex-shrink: 0;
+}
+
+/* Dotted Menu Line Leader (Inspired by Image 1 & 4) */
+.menu-dots {
+  flex-grow: 1;
+  border-bottom: 1px dotted rgba(212, 175, 55, 0.35);
+  margin: 0 8px;
+  position: relative;
+  top: -4px;
+}
+
+/* Circular Dark Ceramic Plate Frame (Inspired by Images 1, 3, 5) */
+.circular-plate-glow {
+  border-radius: 9999px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(212, 175, 55, 0.12), inset 0 0 20px rgba(0, 0, 0, 0.8);
+  border: 3px solid rgba(35, 35, 45, 0.8);
+  position: relative;
+}
+
+/* Gold Button Pill */
+.btn-royal-gold {
+  background: linear-gradient(135deg, #f7d672 0%, #d4af37 50%, #b8860b 100%);
+  color: #0d0d10;
+  font-family: var(--font-cinzel), serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 9999px;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+  transition: all 0.25s ease;
+}
+.btn-royal-gold:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 25px rgba(212, 175, 55, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-royal-outline {
+  background: transparent;
+  color: #f7d672;
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  font-family: var(--font-cinzel), serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 9999px;
+  transition: all 0.25s ease;
+}
+.btn-royal-outline:hover {
+  background: rgba(212, 175, 55, 0.12);
+  border-color: #d4af37;
+  color: #ffffff;
+}
+
+/* Veg / Non-Veg Marks (Refined for Dark Luxury) */
+.zomato-veg-mark {
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid #10b981;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(16, 185, 129, 0.1);
+}
+.zomato-veg-mark::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10b981;
+}
+
+.zomato-nonveg-mark {
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid #ef4444;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(239, 68, 68, 0.1);
+}
+.zomato-nonveg-mark::after {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 7px solid #ef4444;
+}
+
+/* Subtle Dark Stone Pattern */
 .arabian-pattern {
-  background-image: radial-gradient(rgba(212, 175, 55, 0.08) 1px, transparent 0);
-  background-size: 24px 24px;
+  background-color: #09090b;
+  background-image: radial-gradient(rgba(212, 175, 55, 0.06) 1px, transparent 0);
+  background-size: 28px 28px;
 }
 
-/* Pulse animation for live delivery rider */
-@keyframes riderPulse {
+/* Steam Wisp Animation */
+@keyframes steamDrift {
   0% {
-    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
+    transform: translateY(0) scaleX(1) scaleY(1);
+    opacity: 0;
   }
-  70% {
-    box-shadow: 0 0 0 16px rgba(212, 175, 55, 0);
+  20% {
+    opacity: 0.6;
+  }
+  60% {
+    opacity: 0.4;
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+    transform: translateY(-80px) scaleX(1.4) scaleY(1.8);
+    opacity: 0;
   }
 }
-
-.rider-pulse {
-  animation: riderPulse 2s infinite;
+.steam-wisp {
+  animation: steamDrift 4s infinite ease-out;
 }
 
-/* Leaflet map custom override to fit dark mode */
-.leaflet-container {
-  background: #14161a !important;
-  font-family: inherit !important;
+/* Warm Ember Particle Glow */
+@keyframes emberRise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-120px) scale(0.2);
+    opacity: 0;
+  }
 }
-
-.leaflet-tile {
-  filter: brightness(0.85) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
-}
-
-/* Custom modal backdrop blur */
-.modal-backdrop {
-  backdrop-filter: blur(8px);
-  background-color: rgba(11, 12, 14, 0.75);
+.ember-dot {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: #ffaa33;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #ff7828;
+  animation: emberRise 3s infinite linear;
 }

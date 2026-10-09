@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { checkDeliveryServiceability } from '@/lib/geo';
 import { createRazorpayOrder } from '@/lib/razorpay';
 import { emitOrderEvent } from '@/lib/events';
+import { checkRateLimit } from '@/lib/rate-limit';
 import { z } from 'zod';
 
 const createOrderSchema = z.object({
@@ -38,6 +39,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { success: false, message: 'Please login to place an order' },
         { status: 401 }
+      );
+    }
+
+    // Rate limit protection against bot order flooding
+    const rateCheck = checkRateLimit(`order_${user.id}`, 12, 60000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Too many orders created quickly. Please wait ${rateCheck.resetInSec}s before placing another order.`,
+        },
+        { status: 429 }
       );
     }
 
