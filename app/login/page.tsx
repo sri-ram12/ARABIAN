@@ -127,39 +127,23 @@ function LoginContent() {
           </NextLink>
         </div>
 
-        {/* 1-Click Fast Demo Logins */}
-        <div className="pt-4 border-t border-mandi-border space-y-2.5">
-          <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold block text-center">
-            ⚡ 1-Click Role Logins (Development Sandbox)
-          </span>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('admin@arabianmandi.in', 'Admin@123', '/admin')}
-              className="p-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-semibold flex items-center gap-2 justify-center transition-colors"
-            >
-              <Shield className="w-4 h-4" /> Admin Panel
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('kitchen@arabianmandi.in', 'Kitchen@123', '/admin/kitchen')}
-              className="p-2.5 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-300 font-semibold flex items-center gap-2 justify-center transition-colors"
-            >
-              <UtensilsCrossed className="w-4 h-4" /> Kitchen Staff
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('rider1@arabianmandi.in', 'Rider@123', '/delivery')}
-              className="p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-semibold flex items-center gap-2 justify-center transition-colors"
-            >
-              <Bike className="w-4 h-4" /> Delivery Rider
-            </button>
+        {/* Quick Customer Demo shortcut & link to Portals Hub */}
+        <div className="pt-4 border-t border-mandi-border text-center space-y-2.5">
+          <p className="text-[11px] text-slate-400">Quick Fill Customer Credentials:</p>
+          <div className="flex items-center justify-center gap-2">
             <button
               type="button"
               onClick={() => handleQuickLogin('customer@arabianmandi.in', 'Customer@123', '/profile')}
-              className="p-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-300 font-semibold flex items-center gap-2 justify-center transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 hover:border-gold-500/50 text-[11px] text-gold-400 flex items-center gap-1 font-mono transition-all"
             >
-              <User className="w-4 h-4" /> Customer
+              <span>customer@arabianmandi.in</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickLogin('9876543215', 'Customer@123', '/profile')}
+              className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 hover:border-gold-500/50 text-[11px] text-gold-400 flex items-center gap-1 font-mono transition-all"
+            >
+              <span>9876543215</span>
             </button>
           </div>
         </div>

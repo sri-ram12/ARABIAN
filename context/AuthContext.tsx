@@ -15,7 +15,7 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (identifier: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  login: (identifier: string, password: string) => Promise<{ success: boolean; message?: string; user?: User }>;
   register: (data: { name: string; email: string; phone: string; password: string }) => Promise<{ success: boolean; message?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -63,8 +63,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       const data = await res.json();
       if (data.success) {
+        setUser(data.user);
         await refreshUser();
-        return { success: true };
+        return { success: true, user: data.user };
       }
       return { success: false, message: data.message };
     } catch (e: any) {

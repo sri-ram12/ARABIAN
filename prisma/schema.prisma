@@ -1,10 +1,10 @@
-// Prisma Schema for Arabian Mandi Platform
+// Production PostgreSQL Prisma Schema for Arabian Mandi Platform
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -26,6 +26,10 @@ model User {
   reviews       Review[]
   supportTickets SupportTicket[]
   notifications Notification[]
+
+  @@index([role])
+  @@index([email])
+  @@index([phone])
 }
 
 model Address {
@@ -34,26 +38,28 @@ model Address {
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   addressLine          String
   landmark             String?
-  area                 String   // e.g. "Sangivalasa", "Tagarapuvalasa Junction", "Chittivalasa"
+  area                 String   
   city                 String   @default("Thagarapuvalasa")
   state                String   @default("Andhra Pradesh")
   pincode              String   @default("531162")
   latitude             Float
   longitude            Float
-  addressType          String   @default("HOME") // HOME, WORK, OTHER
+  addressType          String   @default("HOME")
   deliveryInstructions String?
   isDefault            Boolean  @default(false)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
   orders               Order[]
+
+  @@index([userId])
 }
 
 model Restaurant {
   id                   String   @id @default("arabian-mandi-main")
   name                 String   @default("Arabian Mandi")
   tagline              String   @default("Authentic Arabian Flavours Delivered Across Thagarapuvalasa")
-  description          String   @default("Experience the royal taste of Yemen & Gulf traditions. Smoked fragrant basmati rice, tender roasted meats, authentic toum & fiery shatta.")
+  description          String   @default("Experience the royal taste of Yemen & Gulf traditions.")
   logo                 String?
   coverImage           String?
   address              String   @default("NH16 Highway Road, Near Sangivalasa Bridge, Thagarapuvalasa, Andhra Pradesh 531162")
@@ -68,7 +74,7 @@ model Restaurant {
   minOrderAmount       Float    @default(200.0)
   baseDeliveryFee      Float    @default(40.0)
   freeDeliveryThreshold Float   @default(599.0)
-  taxPercentage        Float    @default(5.0) // 5% GST
+  taxPercentage        Float    @default(5.0)
   packagingFee         Float    @default(25.0)
   codEnabled           Boolean  @default(true)
   cancellationAllowedMinutes Int @default(5)
@@ -89,6 +95,8 @@ model Category {
   updatedAt   DateTime   @updatedAt
 
   items       MenuItem[]
+
+  @@index([slug])
 }
 
 model MenuItem {
@@ -106,16 +114,20 @@ model MenuItem {
   isFeatured         Boolean          @default(false)
   isBestseller       Boolean          @default(false)
   preparationTimeMin Int              @default(25)
-  spiceLevel         String           @default("MEDIUM") // MILD, MEDIUM, SPICY, EXTRA_SPICY
-  servingSize        String           @default("SERVES_1_2") // SERVES_1, SERVES_1_2, SERVES_2_3, SERVES_4_6
+  spiceLevel         String           @default("MEDIUM")
+  servingSize        String           @default("SERVES_1_2")
   servesCount        Int              @default(2)
-  ingredients        String?          // Comma-separated or JSON
-  sizesJson          String?          // e.g. [{"name":"Half","price":340},{"name":"Full","price":620}]
+  ingredients        String?          
+  sizesJson          String?          
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
 
   addons             MenuItemAddon[]
   orderItems         OrderItem[]
+
+  @@index([categoryId])
+  @@index([isAvailable])
+  @@index([isBestseller])
 }
 
 model MenuItemAddon {
@@ -125,17 +137,18 @@ model MenuItemAddon {
   name        String
   price       Float
   isAvailable Boolean   @default(true)
+
+  @@index([menuItemId])
 }
 
 model Order {
   id                   String              @id @default(uuid())
-  orderNumber          String              @unique // AM-20261004-000123
+  orderNumber          String              @unique 
   customerId           String
   customer             User                @relation("CustomerOrders", fields: [customerId], references: [id])
   addressId            String
   address              Address             @relation(fields: [addressId], references: [id])
-  status               String              @default("PLACED") 
-  // PLACED, CONFIRMED, PREPARING, READY_FOR_PICKUP, OUT_FOR_DELIVERY, DELIVERED, CANCELLED, REFUND_INITIATED, REFUNDED
+  status               String              @default("PLACED")
   
   subtotal             Float
   discount             Float               @default(0.0)
@@ -158,6 +171,10 @@ model Order {
   deliveryAssignment   DeliveryAssignment?
   review               Review?
   supportTickets       SupportTicket[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model OrderItem {
@@ -170,16 +187,18 @@ model OrderItem {
   size        String?
   price       Float
   quantity    Int
-  addOnsJson  String?  // JSON array of selected addons
+  addOnsJson  String?  
   subtotal    Float
+
+  @@index([orderId])
 }
 
 model Payment {
   id                 String    @id @default(uuid())
   orderId            String    @unique
   order              Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  paymentMethod      String    // RAZORPAY, COD
-  status             String    @default("PENDING") // PENDING, PAID, FAILED, REFUNDED
+  paymentMethod      String    
+  status             String    @default("PENDING") 
   amount             Float
   currency           String    @default("INR")
   razorpayOrderId    String?
@@ -190,6 +209,10 @@ model Payment {
   paidAt             DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+  @@index([razorpayOrderId])
 }
 
 model DeliveryAssignment {
@@ -198,7 +221,7 @@ model DeliveryAssignment {
   order                Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
   deliveryPartnerId    String
   deliveryPartner      User      @relation("PartnerDeliveries", fields: [deliveryPartnerId], references: [id])
-  status               String    @default("ASSIGNED") // ASSIGNED, ACCEPTED, REJECTED, ARRIVED_AT_RESTAURANT, PICKED_UP, DELIVERED
+  status               String    @default("ASSIGNED")
   earnings             Float     @default(50.0)
   distanceKm           Float     @default(3.5)
   assignedAt           DateTime  @default(now())
@@ -206,6 +229,9 @@ model DeliveryAssignment {
   pickedUpAt           DateTime?
   deliveredAt          DateTime?
   notes                String?
+
+  @@index([deliveryPartnerId])
+  @@index([status])
 }
 
 model DeliveryLocation {
@@ -218,6 +244,9 @@ model DeliveryLocation {
   heading           Float?
   speed             Float?
   timestamp         DateTime  @default(now())
+
+  @@index([deliveryPartnerId])
+  @@index([orderId])
 }
 
 model Coupon {
@@ -225,7 +254,7 @@ model Coupon {
   code           String    @unique
   title          String
   description    String
-  discountType   String    // PERCENTAGE, FLAT
+  discountType   String    
   discountValue  Float
   minOrderAmount Float     @default(0.0)
   maxDiscount    Float?
@@ -235,11 +264,14 @@ model Coupon {
   isActive       Boolean   @default(true)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+
+  @@index([code])
+  @@index([isActive])
 }
 
 model DeliveryZone {
   id                 String   @id @default(uuid())
-  name               String   // "Zone A - Thagarapuvalasa & Sangivalasa", "Zone B - Anandapuram / Bheemili", etc.
+  name               String   
   minDistanceKm      Float
   maxDistanceKm      Float
   deliveryFee        Float
@@ -255,30 +287,35 @@ model Review {
   order          Order     @relation(fields: [orderId], references: [id])
   userId         String
   user           User      @relation(fields: [userId], references: [id])
-  rating         Int       @default(5) // 1 to 5
+  rating         Int       @default(5) 
   foodRating     Int       @default(5)
   deliveryRating Int       @default(5)
   comment        String
   isApproved     Boolean   @default(true)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+
+  @@index([isApproved])
 }
 
 model SupportTicket {
   id          String    @id @default(uuid())
-  ticketId    String    @unique // TKT-10023
+  ticketId    String    @unique 
   customerId  String
   customer    User      @relation(fields: [customerId], references: [id])
   orderId     String?
   order       Order?    @relation(fields: [orderId], references: [id])
-  issueType   String    // MISSING_ITEM, LATE_DELIVERY, WRONG_ITEM, PAYMENT_ISSUE, CANCELLATION, OTHER
+  issueType   String    
   subject     String
   message     String
-  status      String    @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
-  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status      String    @default("OPEN") 
+  priority    String    @default("MEDIUM") 
   adminNotes  String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([customerId])
+  @@index([status])
 }
 
 model Notification {
@@ -287,8 +324,11 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title     String
   message   String
-  type      String   @default("INFO") // ORDER_UPDATE, PROMO, SYSTEM
+  type      String   @default("INFO")
   link      String?
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
 }

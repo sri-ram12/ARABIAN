@@ -61,7 +61,9 @@ export default function Navbar() {
                 <span>Dining & Delivery: 11:00 AM – 11:30 PM</span>
               </span>
               <span className="hidden md:inline text-neutral-500">|</span>
-              <span className="hidden md:inline font-mono">Sangivalasa, Thagarapuvalasa</span>
+              <span className="hidden md:inline text-neutral-300 font-medium">
+                Thagarapuvalasa • Visakhapatnam NH16
+              </span>
             </div>
           </div>
         </div>

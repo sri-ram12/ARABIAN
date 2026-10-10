@@ -78,7 +78,8 @@ export default function CheckoutPage() {
         const data = await res.json();
         if (data.success && data.addresses) {
           setSavedAddresses(data.addresses);
-          if (!selectedAddress && data.addresses.length > 0) {
+          const currentValid = data.addresses.find((a: any) => a.id === selectedAddress?.id);
+          if (!currentValid && data.addresses.length > 0) {
             setSelectedAddress(data.addresses[0]);
           } else if (data.addresses.length === 0) {
             setShowNewAddressForm(true);
@@ -147,14 +148,17 @@ export default function CheckoutPage() {
         paymentMethod,
         deliveryInstructions,
         kitchenNotes,
-        appliedCoupon: appliedCoupon?.code,
+        couponCode: appliedCoupon?.code || undefined,
+        appliedCoupon: appliedCoupon?.code || undefined,
         items: items.map((it) => ({
           menuItemId: it.menuItemId,
           name: it.name,
           quantity: it.quantity,
-          size: it.size,
+          size: it.size || null,
           price: it.price,
-          selectedAddons: it.selectedAddons,
+          selectedAddons: Array.isArray(it.selectedAddons)
+            ? it.selectedAddons.map((a) => ({ name: a.name, price: a.price }))
+            : [],
         })),
       };
 

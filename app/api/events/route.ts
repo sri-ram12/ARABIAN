@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
         callback: (data) => {
           try {
             controller.enqueue(
-              encoder.encode(`event: ${data.type}\ndata: ${JSON.stringify(data)}\n\n`)
+              encoder.encode(`data: ${JSON.stringify(data)}\n\n`)
             );
           } catch (e) {
             // Stream closed

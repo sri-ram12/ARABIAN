@@ -44,7 +44,7 @@ export default function DeliveryPartnerPage() {
   // Protect route
   useEffect(() => {
     if (!authLoading && (!user || (user.role !== 'DELIVERY_PARTNER' && user.role !== 'ADMIN'))) {
-      router.push('/login?redirect=/delivery');
+      router.push('/rider/login');
     }
   }, [user, authLoading, router]);
 
@@ -65,10 +65,43 @@ export default function DeliveryPartnerPage() {
     }
   };
 
+  const playRiderChime = () => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.12);
+      osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.24);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.5);
+    } catch (e) {}
+  };
+
   useEffect(() => {
     fetchDeliveries();
-    const interval = setInterval(fetchDeliveries, 10000);
-    return () => clearInterval(interval);
+
+    const eventSource = new EventSource('/api/events?role=DELIVERY_PARTNER');
+    eventSource.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+        if (payload.type === 'DELIVERY_ASSIGNED' || payload.type === 'ORDER_READY_FOR_PICKUP') {
+          playRiderChime();
+        }
+        fetchDeliveries();
+      } catch (err) {}
+    };
+
+    const interval = setInterval(fetchDeliveries, 8000);
+    return () => {
+      eventSource.close();
+      clearInterval(interval);
+    };
   }, []);
 
   // Handle Workflow Actions

@@ -35,11 +35,18 @@ export async function POST(req: NextRequest) {
 
     const { identifier, password } = result.data;
     const cleanId = identifier.trim().toLowerCase();
+    const digitsOnly = identifier.replace(/[^0-9]/g, '');
+    const last10Digits = digitsOnly.length >= 10 ? digitsOnly.slice(-10) : digitsOnly;
 
-    // Check by email or phone
+    // Check by email, exact phone, digits-only, or last 10 digits
     const user = await prisma.user.findFirst({
       where: {
-        OR: [{ email: cleanId }, { phone: identifier.trim() }],
+        OR: [
+          { email: cleanId },
+          { phone: identifier.trim() },
+          ...(digitsOnly ? [{ phone: digitsOnly }] : []),
+          ...(last10Digits && last10Digits !== digitsOnly ? [{ phone: last10Digits }] : []),
+        ],
       },
     });
 

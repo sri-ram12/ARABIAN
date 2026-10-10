@@ -89,7 +89,7 @@ export default function KitchenDashboardPage() {
   // Protect route
   useEffect(() => {
     if (!authLoading && (!user || (user.role !== 'KITCHEN_STAFF' && user.role !== 'ADMIN'))) {
-      router.push('/login?redirect=/admin/kitchen');
+      router.push('/kitchen/login');
     }
   }, [user, authLoading, router]);
 

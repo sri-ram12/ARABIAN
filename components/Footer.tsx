@@ -134,30 +134,33 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 4: Learn More */}
+          {/* Col 4: Quality & Hospitality */}
           <div className="space-y-3">
             <h4 className="font-cinzel font-bold text-[#fceda2] text-xs uppercase tracking-wider">
-              Standards & Policies
+              Quality & Trust
             </h4>
             <ul className="space-y-2.5 text-xs text-[#d4d4d8]">
+              <li className="flex items-center gap-1.5 text-[#d4d4d8]">
+                <Award className="w-3.5 h-3.5 text-[#d4af37]" />
+                <span>100% Halal Certified Meats</span>
+              </li>
+              <li className="flex items-center gap-1.5 text-[#d4d4d8]">
+                <Crown className="w-3.5 h-3.5 text-[#d4af37]" />
+                <span>Ancestral Yemeni Dum Process</span>
+              </li>
               <li>
-                <NextLink href="/privacy" className="hover:text-[#fceda2] transition-colors">
-                  Privacy Policy
+                <NextLink href="/track" className="hover:text-[#fceda2] transition-colors">
+                  Contactless Delivery & Live GPS
                 </NextLink>
               </li>
               <li>
-                <NextLink href="/security" className="hover:text-[#fceda2] transition-colors">
-                  FSSAI Hygiene Standards
+                <NextLink href="/offers" className="hover:text-[#fceda2] transition-colors">
+                  Exclusive Feast Offers & Codes
                 </NextLink>
               </li>
               <li>
-                <NextLink href="/terms" className="hover:text-[#fceda2] transition-colors">
-                  Terms & Conditions
-                </NextLink>
-              </li>
-              <li>
-                <NextLink href="/refunds" className="hover:text-[#fceda2] transition-colors">
-                  Order Refund & Cancellation
+                <NextLink href="/privacy" className="text-neutral-400 hover:text-white transition-colors">
+                  Privacy & FSSAI Standards
                 </NextLink>
               </li>
             </ul>

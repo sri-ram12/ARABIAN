@@ -44,7 +44,7 @@ export default function AdminDashboardPage() {
   const { user, loading: authLoading } = useAuth();
 
   const [activeTab, setActiveTab] = useState<
-    'analytics' | 'orders' | 'menu' | 'coupons' | 'reviews' | 'support' | 'settings'
+    'analytics' | 'orders' | 'menu' | 'coupons' | 'reviews' | 'support' | 'settings' | 'riders'
   >('analytics');
   const [metrics, setMetrics] = useState<any>(null);
   const [popularDishes, setPopularDishes] = useState<any[]>([]);
@@ -67,6 +67,18 @@ export default function AdminDashboardPage() {
     discountValue: 50,
     minOrderAmount: 299,
   });
+
+  // Rider Management Modal State
+  const [showAddRiderModal, setShowAddRiderModal] = useState(false);
+  const [newRider, setNewRider] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    password: '',
+  });
+  const [riderSubmitting, setRiderSubmitting] = useState(false);
+  const [riderError, setRiderError] = useState<string | null>(null);
+  const [riderSuccess, setRiderSuccess] = useState<string | null>(null);
 
   // Filters state for Orders
   const [orderStatusFilter, setOrderStatusFilter] = useState('ALL');
@@ -115,14 +127,14 @@ export default function AdminDashboardPage() {
   // Protect admin route
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'ADMIN')) {
-      router.push('/login?redirect=/admin');
+      router.push('/admin/login');
     }
   }, [user, authLoading, router]);
 
   // Load Dashboard Data
   const loadDashboard = async () => {
     try {
-      const [dashRes, ordersRes, menuRes, settingsRes, couponsRes, reviewsRes, supportRes] =
+      const [dashRes, ordersRes, menuRes, settingsRes, couponsRes, reviewsRes, supportRes, ridersRes] =
         await Promise.all([
           fetch('/api/admin/dashboard'),
           fetch(
@@ -133,6 +145,7 @@ export default function AdminDashboardPage() {
           fetch('/api/admin/coupons'),
           fetch('/api/admin/reviews'),
           fetch('/api/admin/support'),
+          fetch('/api/admin/riders'),
         ]);
 
       const [
@@ -143,6 +156,7 @@ export default function AdminDashboardPage() {
         couponsData,
         reviewsData,
         supportData,
+        ridersData,
       ] = await Promise.all([
         dashRes.json(),
         ordersRes.json(),
@@ -151,6 +165,7 @@ export default function AdminDashboardPage() {
         couponsRes.json(),
         reviewsRes.json(),
         supportRes.json(),
+        ridersRes.json(),
       ]);
 
       if (dashData.success) {
@@ -158,6 +173,11 @@ export default function AdminDashboardPage() {
         setPopularDishes(dashData.popularDishes || []);
         setRevenueTrends(dashData.revenueTrends || []);
         setPaymentMethods(dashData.paymentMethods || { RAZORPAY: 0, COD: 0 });
+      }
+
+      if (ridersData && ridersData.success) {
+        setRiders(ridersData.riders || []);
+      } else if (dashData.success) {
         setRiders(dashData.riders || []);
       }
 
@@ -300,6 +320,57 @@ export default function AdminDashboardPage() {
       }
     } catch (e) {
       alert('Failed to assign delivery partner');
+    }
+  };
+
+  // Onboard New Delivery Rider Handler
+  const handleCreateRider = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRiderError(null);
+    setRiderSuccess(null);
+    setRiderSubmitting(true);
+
+    try {
+      const res = await fetch('/api/admin/riders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newRider),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRiderSuccess(data.message || 'Delivery partner onboarded successfully!');
+        setNewRider({ name: '', phone: '', email: '', password: '' });
+        loadDashboard();
+        setTimeout(() => {
+          setShowAddRiderModal(false);
+          setRiderSuccess(null);
+        }, 1200);
+      } else {
+        setRiderError(data.message || 'Failed to onboard delivery partner');
+      }
+    } catch (err) {
+      setRiderError('Network error while onboarding rider');
+    } finally {
+      setRiderSubmitting(false);
+    }
+  };
+
+  // Remove Delivery Rider Handler
+  const handleDeleteRider = async (riderId: string, riderName: string) => {
+    if (!confirm(`Are you sure you want to remove delivery partner "${riderName}"?`)) return;
+    try {
+      const res = await fetch(`/api/admin/riders/${riderId}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message || `Delivery partner "${riderName}" removed.`);
+        loadDashboard();
+      } else {
+        alert(data.message || 'Failed to remove rider');
+      }
+    } catch (e) {
+      alert('Failed to delete delivery partner');
     }
   };
 
@@ -549,6 +620,17 @@ export default function AdminDashboardPage() {
           }`}
         >
           <Settings className="w-4 h-4" /> Restaurant Settings
+        </button>
+
+        <button
+          onClick={() => setActiveTab('riders')}
+          className={`pb-3 transition-colors border-b-2 flex items-center gap-2 ${
+            activeTab === 'riders'
+              ? 'border-gold-500 text-gold-400'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Bike className="w-4 h-4" /> Delivery Fleet ({riders.length})
         </button>
       </div>
 
@@ -1222,6 +1304,173 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
+      {/* 8. DELIVERY FLEET TAB */}
+      {activeTab === 'riders' && (
+        <div className="space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 className="font-heading font-bold text-lg text-white">
+                Delivery Partner Fleet Management ({riders.length})
+              </h3>
+              <p className="text-xs text-slate-400">
+                Onboard drivers, monitor active delivery assignments, and track fleet performance across Thagarapuvalasa.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setRiderError(null);
+                setRiderSuccess(null);
+                setShowAddRiderModal(true);
+              }}
+              className="px-4 py-2.5 rounded-xl bg-gold-gradient text-black font-heading font-bold text-xs tracking-wider shadow-gold-sm hover:brightness-110 flex items-center gap-1.5 transition-all"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" /> Onboard New Rider
+            </button>
+          </div>
+
+          {/* Fleet Metrics */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="bg-mandi-card border border-mandi-border p-4 rounded-2xl">
+              <span className="text-[10px] text-slate-400 uppercase font-semibold block">Total Fleet</span>
+              <div className="flex items-center gap-2 mt-1">
+                <Bike className="w-5 h-5 text-gold-400" />
+                <span className="font-heading text-xl font-bold text-white">{riders.length}</span>
+              </div>
+            </div>
+
+            <div className="bg-mandi-card border border-mandi-border p-4 rounded-2xl">
+              <span className="text-[10px] text-slate-400 uppercase font-semibold block">Available / Idle</span>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                <span className="font-heading text-xl font-bold text-emerald-400">
+                  {riders.filter((r) => r.isAvailable).length}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-mandi-card border border-mandi-border p-4 rounded-2xl">
+              <span className="text-[10px] text-slate-400 uppercase font-semibold block">Active Delivering</span>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+                <span className="font-heading text-xl font-bold text-amber-400">
+                  {riders.filter((r) => !r.isAvailable).length}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-mandi-card border border-mandi-border p-4 rounded-2xl">
+              <span className="text-[10px] text-slate-400 uppercase font-semibold block">Total Completed</span>
+              <div className="flex items-center gap-2 mt-1">
+                <CheckCircle className="w-5 h-5 text-blue-400" />
+                <span className="font-heading text-xl font-bold text-blue-400">
+                  {riders.reduce((acc, r) => acc + (r.totalCompletedDeliveries || 0), 0)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Riders Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {riders.map((r) => (
+              <div
+                key={r.id}
+                className="bg-mandi-card border border-mandi-border hover:border-gold-500/40 rounded-2xl p-5 space-y-4 shadow-xl transition-all"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-700/20 border border-gold-500/30 text-gold-400 font-bold flex items-center justify-center font-heading text-base">
+                      {r.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h4 className="font-heading font-bold text-sm text-white">{r.name}</h4>
+                      <p className="text-[11px] text-slate-400 font-mono">{r.phone}</p>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold border flex items-center gap-1.5 ${
+                      r.isAvailable
+                        ? 'bg-emerald-950/60 text-emerald-400 border-emerald-500/30'
+                        : 'bg-amber-950/60 text-amber-400 border-amber-500/30'
+                    }`}
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        r.isAvailable ? 'bg-emerald-400' : 'bg-amber-400 animate-ping'
+                      }`}
+                    />
+                    {r.isAvailable ? 'AVAILABLE' : 'ON DELIVERY'}
+                  </span>
+                </div>
+
+                {r.activeDelivery && (
+                  <div className="p-3 rounded-xl bg-mandi-surface border border-amber-500/30 text-xs space-y-1">
+                    <div className="flex justify-between items-center text-amber-300 font-bold text-[11px]">
+                      <span>Delivering Order #{r.activeDelivery.orderNumber}</span>
+                      <span className="uppercase text-[9px] bg-amber-500/20 px-2 py-0.5 rounded">
+                        {r.activeDelivery.status}
+                      </span>
+                    </div>
+                    {r.activeDelivery.address && (
+                      <p className="text-slate-400 text-[11px] truncate">
+                        📍 {r.activeDelivery.address.area || r.activeDelivery.address.city}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-mandi-border text-xs">
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Deliveries Done</span>
+                    <span className="font-semibold text-white">
+                      {r.totalCompletedDeliveries || 0} orders
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Lifetime Earnings</span>
+                    <span className="font-semibold text-gold-400">
+                      ₹{r.totalEarnings ? r.totalEarnings.toFixed(0) : 0}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-mandi-border">
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`tel:${r.phone}`}
+                      className="p-2 rounded-lg bg-mandi-surface hover:bg-mandi-elevated text-slate-300 hover:text-white border border-mandi-border transition-colors"
+                      title="Call Rider"
+                    >
+                      <Phone className="w-3.5 h-3.5" />
+                    </a>
+                    <a
+                      href={`https://wa.me/91${r.phone?.replace(/\D/g, '')}?text=${encodeURIComponent(
+                        `Hello ${r.name}, this is Arabian Mandi management.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/30 text-emerald-400 transition-colors"
+                      title="WhatsApp Rider"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+
+                  <button
+                    onClick={() => handleDeleteRider(r.id, r.name)}
+                    className="p-2 rounded-lg bg-red-950/40 hover:bg-red-900/60 border border-red-500/30 text-red-400 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    title="Remove Rider"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span className="text-[11px]">Remove</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Add Coupon Modal */}
       {showAddCouponModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -1331,7 +1580,7 @@ export default function AdminDashboardPage() {
               <option value="">Select Delivery Rider</option>
               {riders.map((r) => (
                 <option key={r.id} value={r.id}>
-                  {r.name} ({r.phone})
+                  {r.name} ({r.phone}) {r.isAvailable ? '• [Available]' : '• [Busy with Order]'}
                 </option>
               ))}
             </select>
@@ -1458,6 +1707,130 @@ export default function AdminDashboardPage() {
                 className="flex-1 py-2.5 rounded-xl bg-gold-gradient text-black font-bold text-xs"
               >
                 Create Dish
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Onboard Delivery Partner Modal */}
+      {showAddRiderModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <form
+            onSubmit={handleCreateRider}
+            className="bg-mandi-card border border-mandi-border rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
+                  <Bike className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-heading font-bold text-base text-white">
+                    Onboard Delivery Partner
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Register a new rider to dispatch orders across Thagarapuvalasa
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddRiderModal(false)}
+                className="text-slate-400 hover:text-white text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {riderError && (
+              <div className="p-3 rounded-xl bg-red-950/60 border border-red-500/40 text-red-300 text-xs">
+                {riderError}
+              </div>
+            )}
+
+            {riderSuccess && (
+              <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs">
+                {riderSuccess}
+              </div>
+            )}
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="text-slate-300 block mb-1 font-semibold">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newRider.name}
+                  onChange={(e) => setNewRider({ ...newRider, name: e.target.value })}
+                  placeholder="e.g. Ramesh Kumar"
+                  className="w-full px-3 py-2.5 rounded-xl bg-mandi-surface border border-mandi-border text-white focus:border-gold-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 block mb-1 font-semibold">
+                  Phone Number (10 digits) *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={newRider.phone}
+                  onChange={(e) => setNewRider({ ...newRider, phone: e.target.value })}
+                  placeholder="e.g. 9876543214"
+                  className="w-full px-3 py-2.5 rounded-xl bg-mandi-surface border border-mandi-border text-white focus:border-gold-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 block mb-1 font-semibold">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={newRider.email}
+                  onChange={(e) => setNewRider({ ...newRider, email: e.target.value })}
+                  placeholder="e.g. ramesh.rider@arabianmandi.in"
+                  className="w-full px-3 py-2.5 rounded-xl bg-mandi-surface border border-mandi-border text-white focus:border-gold-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 block mb-1 font-semibold">
+                  Portal Login Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={newRider.password}
+                  onChange={(e) => setNewRider({ ...newRider, password: e.target.value })}
+                  placeholder="•••••••• (min 6 chars)"
+                  className="w-full px-3 py-2.5 rounded-xl bg-mandi-surface border border-mandi-border text-white focus:border-gold-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 leading-relaxed">
+                ℹ️ The rider can log in at <span className="font-mono font-bold">/login</span> using their phone number or email and this password to access their Rider Dashboard.
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-3 border-t border-mandi-border">
+              <button
+                type="button"
+                onClick={() => setShowAddRiderModal(false)}
+                className="flex-1 py-2.5 rounded-xl bg-mandi-surface hover:bg-mandi-elevated text-slate-300 text-xs font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={riderSubmitting}
+                className="flex-1 py-2.5 rounded-xl bg-gold-gradient text-black font-heading font-bold text-xs tracking-wider shadow-gold-sm hover:brightness-110 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
+              >
+                {riderSubmitting ? 'ONBOARDING...' : 'CONFIRM ONBOARDING'}
               </button>
             </div>
           </form>

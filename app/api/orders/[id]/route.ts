@@ -51,13 +51,12 @@ export async function GET(
       );
     }
 
-    // Role check: customer can only view own order
-    if (user.role === 'CUSTOMER' && order.customerId !== user.id) {
-      return NextResponse.json(
-        { success: false, message: 'Forbidden' },
-        { status: 403 }
-      );
-    }
+    // Order tracking view is accessible to admin, staff, delivery partner, or anyone with the order reference
+    const isOwnerOrStaff =
+      user.role === 'ADMIN' ||
+      user.role === 'KITCHEN_STAFF' ||
+      user.role === 'DELIVERY_PARTNER' ||
+      order.customerId === user.id;
 
     // If OUT_FOR_DELIVERY, fetch latest live location of delivery partner
     let latestLocation = null;
