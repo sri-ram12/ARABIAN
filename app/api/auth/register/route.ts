@@ -23,17 +23,23 @@ export async function POST(req: NextRequest) {
     }
 
     const { name, email, phone, password } = result.data;
+    const digitsOnly = phone.replace(/[^0-9]/g, '');
+    const cleanPhone = digitsOnly.length >= 10 ? digitsOnly.slice(-10) : digitsOnly;
 
     // Check if user already exists
     const existing = await prisma.user.findFirst({
       where: {
-        OR: [{ email: email.toLowerCase() }, { phone }],
+        OR: [
+          { email: email.toLowerCase().trim() },
+          { phone: cleanPhone },
+          { phone: phone.trim() },
+        ],
       },
     });
 
     if (existing) {
       return NextResponse.json(
-        { success: false, message: 'User with this email or phone already exists' },
+        { success: false, message: 'User with this email or phone number already exists' },
         { status: 409 }
       );
     }
@@ -41,9 +47,9 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await hashPassword(password);
     const user = await prisma.user.create({
       data: {
-        name,
-        email: email.toLowerCase(),
-        phone,
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        phone: cleanPhone,
         password: hashedPassword,
         role: 'CUSTOMER',
       },

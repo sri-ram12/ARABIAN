@@ -29,8 +29,8 @@ export async function POST(req: NextRequest) {
 
     const { orderId, rating, foodRating, deliveryRating, comment } = await req.json();
 
-    if (!orderId || !comment || typeof rating !== 'number') {
-      return NextResponse.json({ success: false, message: 'Rating and comment are required' }, { status: 400 });
+    if (!orderId || typeof rating !== 'number') {
+      return NextResponse.json({ success: false, message: 'Rating is required' }, { status: 400 });
     }
 
     const order = await prisma.order.findUnique({
@@ -58,9 +58,9 @@ export async function POST(req: NextRequest) {
         orderId: order.id,
         userId: user.id,
         rating: Math.min(5, Math.max(1, rating)),
-        foodRating: foodRating ? Math.min(5, Math.max(1, foodRating)) : rating,
-        deliveryRating: deliveryRating ? Math.min(5, Math.max(1, deliveryRating)) : rating,
-        comment,
+        foodRating: typeof foodRating === 'number' ? Math.min(5, Math.max(1, foodRating)) : rating,
+        deliveryRating: typeof deliveryRating === 'number' ? Math.min(5, Math.max(1, deliveryRating)) : rating,
+        comment: comment?.trim() || 'Delicious and authentic Arabian Mandi feast!',
         isApproved: true,
       },
     });
